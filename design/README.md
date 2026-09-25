@@ -10,3 +10,7 @@ Mascotte : Dashhound, teckel à lunettes (noires, épaisses, sans logo) avec une
 | `source/icon-and-hero-composite.png` | Rendu brut dont sont extraits l'icône et le hero | — |
 
 Palette : orange #F87521 · cuivre du pelage · noir des lunettes · blanc cassé #FCF8F4 (fond). Ne jamais écrire « Ray-Ban » ou « Meta » à côté du visuel.
+
+## Poses (`poses/`)
+
+14 poses découpées de la planche, carrées, fond blanc cassé `#FAF7F2` (pas de transparence) : `hero-run` · `run-1/2/3` · `face-curious` · `face-happy` · `face-wink` · `face-tired` · `face-alert` · `play-bow` · `sit-alert` · `walk` · `sniff` · `look-back`. Mapping état → pose et palette light/dark : `docs/UI_Dashhound.md`. Deux poses ont un bord de voisin à nettoyer (`hero-run` bas-droit, `sit-alert` haut-droit).
