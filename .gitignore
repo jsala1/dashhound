@@ -10,3 +10,4 @@ Config.xcconfig
 captures/
 *.mp4
 *.mov
+Dashcam/Info.plist

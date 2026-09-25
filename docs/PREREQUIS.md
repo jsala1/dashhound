@@ -40,7 +40,7 @@ scripts/bootstrap.sh                                   # une fois
 xcrun devicectl list devices                           # récupérer l'UDID de l'iPhone
 xcodebuild -scheme Dashcam -destination "id=<UDID>" -allowProvisioningUpdates build
 xcrun devicectl device install app --device <UDID> <chemin .app dans DerivedData>
-xcrun devicectl device process launch --device <UDID> --console com.julian.glassesdashcam
+xcrun devicectl device process launch --device <UDID> --console com.juliansalaun.glassesdashcam
 ```
 
 Logs de l'app : `Logger(subsystem: "com.julian.glassesdashcam", …)` + `--console` ci-dessus, ou

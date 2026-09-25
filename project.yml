@@ -2,7 +2,7 @@
 # Installer : brew install xcodegen
 name: Dashcam
 options:
-  bundleIdPrefix: com.julian
+  bundleIdPrefix: com.juliansalaun
   deploymentTarget:
     iOS: "17.2"
   xcodeVersion: "26.0"
@@ -37,7 +37,7 @@ targets:
         product: MWDATInputs
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.julian.glassesdashcam
+        PRODUCT_BUNDLE_IDENTIFIER: com.juliansalaun.glassesdashcam
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         TARGETED_DEVICE_FAMILY: "1"

@@ -5,17 +5,21 @@ import MWDATCore
 
 @main
 struct DashcamApp: App {
+  @State private var model: WearablesModel
+
   init() {
     do {
       try Wearables.configure()
     } catch {
       assertionFailure("Configuration du SDK Wearables impossible : \(error)")
     }
+    // Après configure() : le modèle lit Wearables.shared dès son init.
+    _model = State(wrappedValue: WearablesModel())
   }
 
   var body: some Scene {
     WindowGroup {
-      ContentView()
+      ContentView(model: model)
         .onOpenURL { url in
           // Ne transmettre au SDK que les liens Meta AI (skill getting-started).
           guard
