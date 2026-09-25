@@ -27,8 +27,8 @@ LinkedIn (cf. `docs/Showcase_LinkedIn.md`).
 | App ID Meta obligatoire ? | ❌ en **Developer Mode**, `MetaAppID` vide/0 → pas d'attestation. ⚠️ Inputs et Motion « doivent être activés pour l'app dans le Developer Center » : à vérifier en P2 (cf. Risques) | skill `getting-started`, skills `inputs`/`motion` |
 | LED de capture | Reste allumée en permanence pendant le stream — **assumé par Julian**. Interdit de la contourner (Acceptable Use Policy) | AUP Meta |
 
-Machine (vérifiée en août sur `glasses-copilot`, à re-vérifier au kickoff) : Xcode 26.6, Swift 6.3,
-iPhone « julian's iPhone » iOS 26.1, lunettes **Ray-Ban Meta « RB Meta 0018 »** (sans écran),
+Machine (vérifiée le 2026-09-25, P0) : Xcode 27.0, Swift 6.4,
+iPhone « julian's iPhone » iOS 27.0 (UDID `[UDID]`), lunettes **Ray-Ban Meta « RB Meta 0018 »** (sans écran),
 Apple ID [email retiré], **Personal Team `Y96VPLGJW7`** (gratuit → re-signature tous
 les 7 jours), pas de compte Meta developer / Developer Mode encore activé.
 
@@ -109,8 +109,10 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
 - 🔧 **Keyframes HEVC** — le clip doit démarrer sur une keyframe, sinon 1-2 s de bouillie verte.
   D'où le buffer de 60 s pour garantir 45 s propres. Vérifier `kCMSampleAttachmentKey_NotSync`.
 - 🔧 **Reconnexion** — perte BT = buffer vidé. Reconnect auto + indicateur clair « buffer vide ».
-- 🔧 **iOS et le background** — `hvc1` continue en background selon le CHANGELOG, mais iOS peut
-  suspendre l'app. Modes déclarés dans `project.yml` (`processing`, `bluetooth-central`,
+- 🔧 **iOS et le background** — **mesuré en P0** : sans audio actif, iOS suspend l'app ~2 s après
+  le verrouillage et les lunettes coupent la session ~20 s plus tard. Un keep-alive (silence joué,
+  catégorie `.playback` + `.mixWithOthers`) tient 2 min 53 s sans suspension à 24 fps
+  (`P0_VERDICT.md`). Le micro HFP seul ne suffit pas et bride la vidéo à 15 fps. Modes déclarés dans `project.yml` (`processing`, `bluetooth-central`,
   `external-accessory`, `audio`). Tester écran éteint, téléphone en poche, 10 min.
 - ⚖️ **Dashcam en France** — usage personnel toléré, la vidéo d'autrui n'est pas diffusable
   sans floutage. Le post LinkedIn n'utilisera qu'un clip **sans tiers identifiable**.
