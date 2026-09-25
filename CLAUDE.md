@@ -1,4 +1,6 @@
-# Glasses Dashcam
+# Dashhound Rewind
+
+> **Nom (décision Julian, 2026-09-26)** : l'app s'appelle **Dashhound** (mascotte : un teckel à lunettes), sous-titre **Rewind** — « la dashcam qui regarde en arrière ». Ancien nom de travail : Glasses Dashcam. **Le bundle ID `com.juliansalaun.glassesdashcam`, le scheme `glassesdashcam://`, le dossier `Dashcam/` et la target Xcode ne changent PAS** (Developer Center, Config.xcconfig et signing en dépendent). Seuls changent : nom affiché, textes UI, docs, Developer Center. ⚠️ « Dash Hound » (2 mots) est déjà un jeu iOS sans rapport — on écrit toujours **Dashhound** en un mot.
 
 App iOS native (Swift/SwiftUI) qui transforme des Ray-Ban Meta en **dashcam rétroactive** : les
 lunettes streament en continu vers l'iPhone, l'app ne garde que les **45 dernières secondes** en

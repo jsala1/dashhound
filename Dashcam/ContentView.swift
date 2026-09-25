@@ -38,7 +38,7 @@ struct ContentView: View {
           }
         }
       }
-      .navigationTitle("Glasses Dashcam")
+      .navigationTitle("Dashhound")
       .confirmationDialog(
         "L'app va ouvrir Meta AI pour autoriser la caméra des lunettes.",
         isPresented: $confirmPermissionRedirect, titleVisibility: .visible
