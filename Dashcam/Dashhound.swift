@@ -96,6 +96,25 @@ enum DashhoundState: Equatable {
   }
 }
 
+extension WearablesModel {
+  /// État de la mascotte déduit de l'état réel. Sans stream ni buffer (avant la P1), une session
+  /// ouverte s'affiche « au repos » : on n'affiche pas de secondes en mémoire qui n'existent pas.
+  var dashhoundState: DashhoundState {
+    switch registrationState {
+    case .unavailable: return .missingPermission
+    case .available, .registering: return .onboarding
+    case .registered: break
+    @unknown default: return .onboarding
+    }
+    if let battery = batteryLevel, battery < 15 { return .tired(battery: battery, isHot: isThermalHot) }
+    if isThermalHot { return .tired(battery: batteryLevel, isHot: true) }
+    if sessionState == .started, !isCameraGranted, cameraPermission != "—" { return .missingPermission }
+    if !hasActiveDevice { return wantsSession ? .disconnected : .searching }
+    if sessionState == .starting { return .searching }
+    return .resting
+  }
+}
+
 /// Carte mascotte : pose sur fond papier (coins 24 pt), ligne du chien, chiffre en gros.
 struct MascotCard: View {
   let state: DashhoundState

@@ -17,6 +17,8 @@ final class WearablesModel {
   /// `nil` = inconnu. 0 est traité comme inconnu (canal pas encore prêt, cf. sample BirdSpotter).
   private(set) var batteryLevel: Int?
   private(set) var thermal = "—"
+  /// Thermique `severe` ou pire : la mascotte passe en « J'ai chaud ».
+  private(set) var isThermalHot = false
   private(set) var donState = "—"
   private(set) var linkState = "—"
   private(set) var cameraPermission = "—"
@@ -187,6 +189,7 @@ final class WearablesModel {
       deviceName = nil
       batteryLevel = nil
       thermal = "—"
+      isThermalHot = false
       donState = "—"
       linkState = "—"
       return
@@ -206,6 +209,10 @@ final class WearablesModel {
     deviceName = device.name.isEmpty ? "Lunettes Meta" : device.name
     batteryLevel = device.batteryLevel.flatMap { $0 > 0 ? $0 : nil }
     thermal = String(describing: device.thermalLevel)
+    switch device.thermalLevel {
+    case .severe, .critical, .emergency, .shutdown: isThermalHot = true
+    default: isThermalHot = false
+    }
     donState = String(describing: device.donState)
     linkState = String(describing: device.linkState)
     log.notice(

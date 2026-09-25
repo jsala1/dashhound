@@ -9,6 +9,13 @@ struct ContentView: View {
   var body: some View {
     NavigationStack {
       List {
+        Section {
+          MascotCard(state: model.dashhoundState)
+            .padding(.vertical, 8)
+            .animation(.easeInOut(duration: 0.25), value: model.dashhoundState)
+        }
+        .listRowBackground(Palette.bg)
+
         Section("Meta AI") {
           row("Enregistrement", model.registrationLabel)
           if !model.isRegistered {
@@ -38,6 +45,8 @@ struct ContentView: View {
           }
         }
       }
+      .scrollContentBackground(.hidden)
+      .background(Palette.bg)
       .navigationTitle("Dashhound")
       .confirmationDialog(
         "L'app va ouvrir Meta AI pour autoriser la caméra des lunettes.",
