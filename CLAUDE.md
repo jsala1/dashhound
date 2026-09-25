@@ -1,9 +1,9 @@
 # Glasses Dashcam
 
 App iOS native (Swift/SwiftUI) qui transforme des Ray-Ban Meta en **dashcam rétroactive** : les
-lunettes streament en continu vers l'iPhone, l'app ne garde que les **60 dernières secondes** en
+lunettes streament en continu vers l'iPhone, l'app ne garde que les **45 dernières secondes** en
 mémoire (ring buffer), et sur **déclencheur** (bouton de capture des lunettes, choc détecté par
-l'IMU des lunettes, ou tap dans l'app) elle **fige ces 60 s en .mp4 dans Photos**.
+l'IMU des lunettes, ou tap dans l'app) elle **fige ces 45 s en .mp4 dans Photos**.
 Projet **perso** de Julian — hors gouvernance [employeur] (pas de Linear, pas de Notion équipe).
 Pas fait pour aller à l'échelle : un test qui doit **marcher en vrai**, filmable pour un post
 LinkedIn (cf. `docs/Showcase_LinkedIn.md`).
@@ -38,9 +38,9 @@ les 7 jours), pas de compte Meta developer / Developer Mode encore activé.
 Ray-Ban Meta ──stream hvc1 (BT Classic / Wi-Fi)──▶ App iOS
      │ IMU (MWDATMotion, 30 Hz)                        │
      │ bouton capture (MWDATInputs)                    ▼
-     │                                    RingBuffer (CMSampleBuffer HEVC, ~75 s, RAM)
+     │                                    RingBuffer (CMSampleBuffer HEVC, ~60 s, RAM)
      ▼                                                 │
- TriggerEngine ──(choc | bouton | tap)──▶ ClipWriter ─▶ .mp4 (passthrough, 60 s depuis 1re keyframe)
+ TriggerEngine ──(choc | bouton | tap)──▶ ClipWriter ─▶ .mp4 (passthrough, 45 s depuis 1re keyframe)
                                                        ▼
                                           Photos + notif + haptique + son
 ```
@@ -53,9 +53,9 @@ Ray-Ban Meta ──stream hvc1 (BT Classic / Wi-Fi)──▶ App iOS
 | `Dashcam/ClipWriter.swift` | `AVAssetWriter` passthrough hvc1 (adapté de `VideoCaptureHandler` du sample), timestamps re-basés à zéro, audio optionnel |
 | `Dashcam/TriggerEngine.swift` | Sources : `.manual` (UI), `.captureButton` (Inputs), `.impact` (Motion : ‖a‖ − g > seuil, debounce 10 s, seuil réglable, log des pics), `.phoneImpact` (CoreMotion, fallback) |
 | `Dashcam/ClipStore.swift` | Sauvegarde Photos (`PHPhotoLibrary`) + copie dans Documents ; `UNUserNotification` ; historique des clips |
-| `Dashcam/ContentView.swift` | Un seul écran : état stream, jauge « 60 s en mémoire », batterie/thermique lunettes, bouton **SAUVER** géant, dernier clip, réglages (durée, seuil, résolution) |
+| `Dashcam/ContentView.swift` | Un seul écran : état stream, jauge « 45 s en mémoire », batterie/thermique lunettes, bouton **SAUVER** géant, dernier clip, réglages (durée, seuil, résolution) |
 
-Décisions par défaut (modifiables dans l'app) : **60 s**, `hvc1`, résolution `.medium` (504×896),
+Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 2026-09-25, était 60 s), `hvc1`, résolution `.medium` (504×896),
 **24 fps**, audio HFP **on**, Motion **30 Hz**, seuil d'impact **initial 3,0 g au-dessus de g**
 (à calibrer en P2 — c'est une hypothèse, pas une mesure).
 
@@ -64,7 +64,7 @@ Décisions par défaut (modifiables dans l'app) : **60 s**, `hvc1`, résolution 
 | Phase | Livrable | Tests bloquants avant la suivante |
 |---|---|---|
 | **P0 — Onboarding DAT** (1 soirée) | Developer Mode activé, sample `CameraAccess` buildé et lancé sur l'iPhone de Julian, stream visible depuis ses lunettes, **un enregistrement de 2 min en hvc1 avec l'app en arrière-plan** | Vidéo lisible dans Photos · stream tient 2 min écran éteint · `P0_VERDICT.md` avec : latence de connexion, batterie lunettes avant/après, résolution/fps réels obtenus |
-| **P1 — Dashcam cœur** (1-2 soirées) | Ring buffer + déclencheur manuel (bouton app) + clip 60 s dans Photos + fonctionne téléphone en poche | Trajet réel de 10 min, 3 taps → 3 clips de 60 s ± 2 s, image continue (pas de trou, pas de frame verte), audio synchro · RAM stable (pas de fuite sur 10 min) · reconnexion propre après coupure BT |
+| **P1 — Dashcam cœur** (1-2 soirées) | Ring buffer + déclencheur manuel (bouton app) + clip 45 s dans Photos + fonctionne téléphone en poche | Trajet réel de 10 min, 3 taps → 3 clips de 45 s ± 3 s (GOP mesuré ≈ 3 s), image continue (pas de trou, pas de frame verte), audio synchro · RAM stable (pas de fuite sur 10 min) · reconnexion propre après coupure BT |
 | **P2 — Déclencheurs lunettes** (1-2 soirées) | Bouton de capture des lunettes (Inputs) + détection de choc (Motion) + fallback CoreMotion | 10 chocs simulés (tape sèche sur la branche / saut) → ≥ 9/10 clips · **0 faux positif sur un trajet de 20 min** (pavés, freinages) · bouton lunettes → clip en < 1 s |
 | **P3 — Showcase** (1 soirée) | UI propre à filmer, clip vidéo + post LinkedIn (`docs/Showcase_LinkedIn.md`) | Julian valide le post avant publication |
 
@@ -107,7 +107,7 @@ Décisions par défaut (modifiables dans l'app) : **60 s**, `hvc1`, résolution 
 - 🔋 **Batterie lunettes** — aucun chiffre public pour un stream continu hvc1. Hypothèse 30-45
   min. **Mesure P0 obligatoire** avant de promettre quoi que ce soit dans le post.
 - 🔧 **Keyframes HEVC** — le clip doit démarrer sur une keyframe, sinon 1-2 s de bouillie verte.
-  D'où le buffer de 75 s pour garantir 60 s propres. Vérifier `kCMSampleAttachmentKey_NotSync`.
+  D'où le buffer de 60 s pour garantir 45 s propres. Vérifier `kCMSampleAttachmentKey_NotSync`.
 - 🔧 **Reconnexion** — perte BT = buffer vidé. Reconnect auto + indicateur clair « buffer vide ».
 - 🔧 **iOS et le background** — `hvc1` continue en background selon le CHANGELOG, mais iOS peut
   suspendre l'app. Modes déclarés dans `project.yml` (`processing`, `bluetooth-central`,
@@ -115,6 +115,13 @@ Décisions par défaut (modifiables dans l'app) : **60 s**, `hvc1`, résolution 
 - ⚖️ **Dashcam en France** — usage personnel toléré, la vidéo d'autrui n'est pas diffusable
   sans floutage. Le post LinkedIn n'utilisera qu'un clip **sans tiers identifiable**.
 - 📷 **FOV** — le stream est plus étroit que les photos (retour dev GitHub #54). Acceptable.
+
+## Idées retenues (hors phase en cours)
+
+- **Indicateur sur l'écran verrouillé** (idée Julian 2026-09-25) : Live Activity (ActivityKit) sur
+  l'écran verrouillé + Dynamic Island — « Dashcam active · 45 s en mémoire », bouton **Sauver**
+  (Live Activity interactive via App Intent, iOS 17+). Sert aussi la transparence (AUP). Cible P1
+  si simple, sinon P3. À vérifier : widget extension + App Group avec le Personal Team gratuit.
 
 ## Questions ouvertes
 
