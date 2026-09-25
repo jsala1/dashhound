@@ -1,0 +1,12 @@
+.DS_Store
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+Dashcam.xcodeproj/
+vendor/
+Config.xcconfig
+captures/
+*.mp4
+*.mov

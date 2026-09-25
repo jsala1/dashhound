@@ -1,0 +1,21 @@
+# À coller dans Claude Code — Kickoff "glasses-dashcam"
+
+> Mode d'emploi : `cd ~/Projects/glasses-dashcam && claude`, puis coller le prompt ci-dessous tel quel.
+> Pour laisser Claude Code piloter Xcode et l'iPhone, lancer avec les permissions élargies
+> (ex. `claude --dangerously-skip-permissions` si tu assumes, sinon valider les commandes une par une).
+
+---
+
+Tu es mon binôme de dev sur un projet perso : une app iOS native (Swift/SwiftUI) qui transforme mes Ray-Ban Meta en dashcam rétroactive (buffer glissant 60 s, sauvegarde sur choc ou bouton). Lis `CLAUDE.md` en entier avant toute action : c'est la source de vérité (état vérifié du SDK, architecture, phases, règles, risques). Puis `docs/PREREQUIS.md`.
+
+Tu pilotes ma machine : Xcode, l'iPhone branché, le terminal. CLI d'abord (xcodegen, xcodebuild, xcrun devicectl) ; l'interface Xcode seulement quand la CLI ne suffit pas (signing, confiance certificat), et tu m'annonces chaque action GUI avant de la faire. Je suis à côté avec les lunettes et l'iPhone : quand une étape demande mes mains (Developer Mode dans l'app Meta AI, accepter une permission sur l'iPhone, porter les lunettes), tu me le dis clairement et tu attends.
+
+Ta première mission — Phase 0 uniquement, une soirée :
+
+1. Lance `scripts/bootstrap.sh` et corrige ce qui coince (XcodeGen, clone du SDK dans vendor/, plugin Claude Code `mwdat-ios`). Lis ensuite les skills du plugin : `getting-started`, `camera-streaming`, `session-lifecycle`, `inputs`, `motion`, `debugging`.
+2. Vérifie les prérequis machine du `docs/PREREQUIS.md` §1 et §3, et guide-moi pour le §2 (Developer Mode Meta AI).
+3. Fais tourner le sample officiel `vendor/dat/samples/CameraAccess` sur mon iPhone avec mes lunettes (signing avec mon Personal Team Y96VPLGJW7, bundle id à adapter si refusé). Objectif : un enregistrement de 2 minutes en `hvc1`, app en arrière-plan, écran éteint, vidéo continue dans Photos.
+4. Génère le projet `Dashcam` depuis `project.yml` (`xcodegen generate`), crée le squelette Swift décrit dans le tableau « Architecture cible » de `CLAUDE.md` (fichiers vides avec leur rôle en commentaire suffisent en P0, sauf `DashcamApp.swift` + `WearablesModel.swift` qui doivent déjà s'enregistrer auprès de Meta AI et afficher batterie + état de session). Build vert sur l'iPhone.
+5. Écris `P0_VERDICT.md` avec des mesures : latence connexion → premier frame, batterie lunettes avant/après les 2 min, résolution/fps réels, comportement en background, et ta recommandation go/no-go pour la P1.
+
+Contraintes : n'attaque pas la P1 (ring buffer, déclencheurs) tant que le test des 2 min en background n'est pas validé. Rien de payant sans me demander. Aucune clé ou token dans le repo. LED de capture visible, aucune fonction de dissimulation — c'est une règle, pas une option. Commits git petits et fréquents, messages en français.

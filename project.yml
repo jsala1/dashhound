@@ -1,0 +1,76 @@
+# XcodeGen spec — `xcodegen generate` produit Dashcam.xcodeproj (gitignoré : le .yml est la source).
+# Installer : brew install xcodegen
+name: Dashcam
+options:
+  bundleIdPrefix: com.julian
+  deploymentTarget:
+    iOS: "17.2"
+  xcodeVersion: "26.0"
+  createIntermediateGroups: true
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: Y96VPLGJW7
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: complete
+packages:
+  MWDAT:
+    url: https://github.com/facebook/meta-wearables-dat-ios
+    exactVersion: 1.0.0
+targets:
+  Dashcam:
+    type: application
+    platform: iOS
+    sources:
+      - path: Dashcam
+    dependencies:
+      - package: MWDAT
+        product: MWDATCore
+      - package: MWDAT
+        product: MWDATCamera
+      - package: MWDAT
+        product: MWDATMotion
+      - package: MWDAT
+        product: MWDATInputs
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.julian.glassesdashcam
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        TARGETED_DEVICE_FAMILY: "1"
+    info:
+      path: Dashcam/Info.plist
+      properties:
+        CFBundleDisplayName: Dashcam
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLName: $(PRODUCT_BUNDLE_IDENTIFIER)
+            CFBundleURLSchemes: [glassesdashcam]
+        MWDAT:
+          AppLinkURLScheme: "glassesdashcam://"
+          # Developer Mode : MetaAppID vide = pas d'attestation (skill getting-started).
+          # Si Inputs/Motion exigent un App ID (risque P2) : valeurs via Config.xcconfig gitignoré.
+          MetaAppID: $(META_APP_ID)
+          ClientToken: $(CLIENT_TOKEN)
+          TeamID: $(DEVELOPMENT_TEAM)
+          Analytics:
+            OptOut: true
+        UIBackgroundModes: [processing, bluetooth-central, bluetooth-peripheral, external-accessory, audio]
+        UISupportedExternalAccessoryProtocols: [com.meta.ar.wearable]
+        NSBluetoothAlwaysUsageDescription: "Connexion aux lunettes Meta."
+        NSLocalNetworkUsageDescription: "Permet à l'iPhone de trouver les lunettes en Wi-Fi pour la vidéo."
+        NSBonjourServices: [_bonjour._tcp]
+        NSMicrophoneUsageDescription: "Audio des lunettes dans les clips."
+        NSPhotoLibraryAddUsageDescription: "Enregistrer les clips dans Photos."
+        NSMotionUsageDescription: "Détection de choc de secours via le téléphone."
+        NSCameraUsageDescription: "Utilisé uniquement par le simulateur de lunettes (MockDevice)."
+schemes:
+  Dashcam:
+    build:
+      targets:
+        Dashcam: all
+    run:
+      config: Debug
