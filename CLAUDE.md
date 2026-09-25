@@ -56,7 +56,7 @@ Ray-Ban Meta ──stream hvc1 (BT Classic / Wi-Fi)──▶ App iOS
 | `Dashcam/ContentView.swift` | Un seul écran : état stream, jauge « 45 s en mémoire », batterie/thermique lunettes, bouton **SAUVER** géant, dernier clip, réglages (durée, seuil, résolution) |
 
 Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 2026-09-25, était 60 s), `hvc1`, résolution `.medium` (504×896),
-**24 fps**, audio HFP **on**, Motion **30 Hz**, seuil d'impact **initial 3,0 g au-dessus de g**
+**24 fps**, audio **on — le son est indispensable** (Julian 2026-09-25 ; source à trancher en P1 : audio de stream SDK 1.0 vs HFP), Motion **30 Hz**, seuil d'impact **initial 3,0 g au-dessus de g**
 (à calibrer en P2 — c'est une hypothèse, pas une mesure).
 
 ## Phasage — une phase = une milestone, tests bloquants
@@ -129,4 +129,4 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
 
 1. Seuil d'impact réel (g) sur des lunettes portées à vélo — à calibrer P2 avec les logs de pics.
 2. Faut-il un App ID Meta pour Inputs/Motion en Developer Mode ? Réponse en P2.
-3. Audio dans le clip : HFP (voix du porteur, porte de bruit dure — cf. `glasses-copilot/P0_VERDICT.md`) ou audio de stream expérimental 1.0 ? Tester les deux en P1.
+3. Audio dans le clip (**on, non négociable**) : HFP (mesuré P0 : bride la vidéo à 15 fps, route volée par les AirPods) ou audio de stream expérimental 1.0 (exige une app Wearables Developer Center + permission `.microphone`) ? **Premier test de la P1** : A/B 2 min écran verrouillé avec keep-alive, mêmes mesures qu'en P0. Repli : micro iPhone.
