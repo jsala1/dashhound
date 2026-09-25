@@ -55,6 +55,7 @@ Ray-Ban Meta ──stream hvc1 (BT Classic / Wi-Fi)──▶ App iOS
 | `Dashcam/ClipWriter.swift` | `AVAssetWriter` passthrough hvc1 (adapté de `VideoCaptureHandler` du sample), timestamps re-basés à zéro, audio optionnel |
 | `Dashcam/TriggerEngine.swift` | Sources : `.manual` (UI), `.captureButton` (Inputs), `.impact` (Motion : ‖a‖ − g > seuil, debounce 10 s, seuil réglable, log des pics), `.phoneImpact` (CoreMotion, fallback) |
 | `Dashcam/ClipStore.swift` | Sauvegarde Photos (`PHPhotoLibrary`) + copie dans Documents ; `UNUserNotification` ; historique des clips |
+| `Dashcam/Dashhound.swift` | `Palette` (9 tokens Color Sets clair/sombre), `DashhoundState` (état → pose, ligne, chiffre), `MascotCard` — cf. `docs/UI_Dashhound.md` |
 | `Dashcam/ContentView.swift` | Un seul écran : état stream, jauge « 45 s en mémoire », batterie/thermique lunettes, bouton **SAUVER** géant, dernier clip, réglages (durée, seuil, résolution) |
 
 Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 2026-09-25, était 60 s), `hvc1`, résolution `.medium` (504×896),
