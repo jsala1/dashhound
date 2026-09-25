@@ -117,6 +117,14 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   catégorie `.playback` + `.mixWithOthers`) tient 2 min 53 s sans suspension à 24 fps
   (`P0_VERDICT.md`). Le micro HFP seul ne suffit pas et bride la vidéo à 15 fps. Modes déclarés dans `project.yml` (`processing`, `bluetooth-central`,
   `external-accessory`, `audio`). Tester écran éteint, téléphone en poche, 10 min.
+- 🎵 **Cohabitation audio** (question Julian 2026-09-26, non testé) — bug SDK ouvert #256 : le
+  démarrage du stream caméra met la musique (A2DP) en pause sans reprise auto. Le micro HFP met les
+  lunettes en mode appel (musique/GPS en qualité téléphone). Les appels passent en priorité et
+  interrompent notre audio. **Intégré au test A/B P1** : Spotify en lecture + guidage Plans + appel
+  entrant pendant les 2 min verrouillé ; noter ce qui coupe, reprend, et finit dans le clip.
+- ⚖️ **Appels et enregistrement** — enregistrer une conversation sans consentement est un délit
+  (art. 226-1 Code pénal). Proposition (à valider par Julian) : son du clip coupé pendant un appel,
+  vidéo seule, mention dans le clip.
 - ⚖️ **Dashcam en France** — usage personnel toléré, la vidéo d'autrui n'est pas diffusable
   sans floutage. Le post LinkedIn n'utilisera qu'un clip **sans tiers identifiable**.
 - 📷 **FOV** — le stream est plus étroit que les photos (retour dev GitHub #54). Acceptable.
