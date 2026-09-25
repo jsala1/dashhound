@@ -20,11 +20,22 @@ final class WearablesModel {
   private(set) var donState = "—"
   private(set) var linkState = "—"
   private(set) var cameraPermission = "—"
+  private(set) var isCameraGranted = false
   var errorMessage: String?
   /// L'utilisateur a demandé une session : on la relance si elle tombe (coupure BT, lunettes pliées).
   private(set) var wantsSession = false
 
   var isRegistered: Bool { registrationState == .registered }
+
+  var registrationLabel: String {
+    switch registrationState {
+    case .registered: return "enregistrée"
+    case .registering: return "en cours…"
+    case .available: return "non enregistrée"
+    case .unavailable: return "indisponible"
+    @unknown default: return "?"
+    }
+  }
 
   // MARK: - Privé
 
@@ -47,7 +58,7 @@ final class WearablesModel {
         guard let stream = self?.wearables.registrationStateStream() else { return }
         for await state in stream {
           self?.registrationState = state
-          self?.log.notice("registration=\(String(describing: state), privacy: .public)")
+          self?.log.notice("registration=\(self?.registrationLabel ?? "?", privacy: .public)")
         }
       })
     tasks.append(
@@ -147,7 +158,7 @@ final class WearablesModel {
 
   func refreshCameraPermission() async {
     do {
-      cameraPermission = String(describing: try await wearables.checkPermissionStatus(.camera))
+      setCameraPermission(try await wearables.checkPermissionStatus(.camera))
     } catch {
       cameraPermission = "erreur"
     }
@@ -156,10 +167,15 @@ final class WearablesModel {
   /// Bascule vers Meta AI : n'appeler qu'après confirmation de l'utilisateur (comme le sample).
   func requestCameraPermission() async {
     do {
-      cameraPermission = String(describing: try await wearables.requestPermission(.camera))
+      setCameraPermission(try await wearables.requestPermission(.camera))
     } catch {
       errorMessage = error.localizedDescription
     }
+  }
+
+  private func setCameraPermission(_ status: PermissionStatus) {
+    isCameraGranted = status == .granted
+    cameraPermission = isCameraGranted ? "accordée" : "non accordée"
   }
 
   // MARK: - État des lunettes

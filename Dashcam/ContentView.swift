@@ -10,7 +10,7 @@ struct ContentView: View {
     NavigationStack {
       List {
         Section("Meta AI") {
-          row("Enregistrement", String(describing: model.registrationState))
+          row("Enregistrement", model.registrationLabel)
           if !model.isRegistered {
             Button("Connecter à Meta AI") { model.register() }
           }
@@ -33,7 +33,7 @@ struct ContentView: View {
             Button("Démarrer la session") { model.startSession() }
               .disabled(!model.isRegistered || !model.hasActiveDevice)
           }
-          if model.sessionState == .started, model.cameraPermission != "granted" {
+          if model.sessionState == .started, !model.isCameraGranted {
             Button("Autoriser la caméra…") { confirmPermissionRedirect = true }
           }
         }
