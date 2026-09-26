@@ -67,7 +67,11 @@ final class DashcamRecorder {
   nonisolated private let telemetry = Telemetry()
   nonisolated private let clock = VideoClock()
 
+  /// Instance vivante, pour le bouton Sauver de la Live Activity (SaveClipIntent).
+  static weak var current: DashcamRecorder?
+
   private let keepAlive = AudioKeepAlive()
+  private let liveActivity = LiveActivityController()
   private let hfp = HFPMicrophone()
   private var uiTask: Task<Void, Never>?
   private var savedFlashTask: Task<Void, Never>?
@@ -75,8 +79,12 @@ final class DashcamRecorder {
 
   init() {
     audioSource = UserDefaults.standard.string(forKey: "audioSource").flatMap(AudioSource.init) ?? .stream
-    resolution = UserDefaults.standard.string(forKey: "resolution").flatMap(VideoResolution.init) ?? .medium
+    // 360×640 par défaut : en 504×896 + audio du stream, le SDK redescend seul en 360×640 et à
+    // ~15 fps 22 % du temps (test A, 2026-09-26) — et un changement de résolution en plein clip
+    // risque de corrompre le passthrough.
+    resolution = UserDefaults.standard.string(forKey: "resolution").flatMap(VideoResolution.init) ?? .low
     ring = RingBuffer(bufferSeconds: 45)
+    Self.current = self
   }
 
   // MARK: - Cycle de vie du stream (appelé par WearablesModel)
@@ -99,6 +107,7 @@ final class DashcamRecorder {
     }
     // Après le HFP (qui fixe la catégorie playAndRecord), sinon catégorie playback + mix.
     keepAlive.start()
+    liveActivity.start(target: Int(bufferSeconds))
     telemetry.start(audio: audioSource.rawValue, resolution: resolution.rawValue)
     log.notice("[P1] dashcam active — audio=\(self.audioStatus, privacy: .public) résolution=\(self.resolution.rawValue, privacy: .public)")
     uiTask = Task { [weak self] in
@@ -116,6 +125,7 @@ final class DashcamRecorder {
     uiTask = nil
     hfp.stop()
     keepAlive.stop()
+    liveActivity.end()
     ring.clear()
     availableSeconds = 0
     telemetry.stop()
@@ -128,6 +138,12 @@ final class DashcamRecorder {
       audioStatus = "stream : \(telemetry.audioFormatDescription)"
     }
     if calls.isOnCall { audioStatus = "coupé pendant l'appel" }
+    updateLiveActivity()
+  }
+
+  private func updateLiveActivity() {
+    liveActivity.update(
+      secondsInMemory: availableSeconds, target: Int(bufferSeconds), lastClipAt: lastClip?.date, isSaving: isSaving)
   }
 
   // MARK: - Ingestion (hors main actor)
@@ -169,7 +185,11 @@ final class DashcamRecorder {
       return
     }
     isSaving = true
-    defer { isSaving = false }
+    updateLiveActivity()
+    defer {
+      isSaving = false
+      updateLiveActivity()
+    }
     let date = Date()
     let muted = calls.hadCall(from: snapshot.video.first?.hostTime ?? now, to: now)
     let url = ClipStore.newClipURL(date: date)
@@ -237,8 +257,23 @@ private final class Telemetry: @unchecked Sendable {
   var audioSamplesSeen: Int { lock.withLock { audioSeen } }
   var audioFormatDescription: String { lock.withLock { audioFormat } }
 
+  private var lifecycleObservers: [NSObjectProtocol] = []
+
   func start(audio: String, resolution: String) {
     let now = CACurrentMediaTime()
+    if lifecycleObservers.isEmpty {
+      let events: [(Notification.Name, String)] = [
+        (UIApplication.didEnterBackgroundNotification, "APP background"),
+        (UIApplication.willEnterForegroundNotification, "APP foreground"),
+        (UIApplication.protectedDataWillBecomeUnavailableNotification, "ÉCRAN verrouillé"),
+        (UIApplication.protectedDataDidBecomeAvailableNotification, "ÉCRAN déverrouillé"),
+      ]
+      lifecycleObservers = events.map { name, label in
+        NotificationCenter.default.addObserver(forName: name, object: nil, queue: nil) { [log] _ in
+          log.notice("[P1] \(label, privacy: .public)")
+        }
+      }
+    }
     lock.withLock {
       startedAt = now
       windowStart = now

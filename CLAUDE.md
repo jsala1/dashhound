@@ -60,8 +60,8 @@ Ray-Ban Meta ──stream hvc1 (BT Classic / Wi-Fi)──▶ App iOS
 | `Dashcam/AudioSupport.swift` | Keep-alive silence, micro HFP (vise les lunettes, jamais d'`engine.start()` sans tap), `CallMonitor` (son coupé pendant un appel), PCM → CMSampleBuffer |
 | `Dashcam/ContentView.swift` | Un seul écran : état stream, jauge « 45 s en mémoire », batterie/thermique lunettes, bouton **SAUVER** géant, dernier clip, réglages (durée, seuil, résolution) |
 
-Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 2026-09-25, était 60 s), `hvc1`, résolution `.medium` (504×896),
-**24 fps**, audio **on — le son est indispensable** (Julian 2026-09-25 ; source à trancher en P1 : audio de stream SDK 1.0 vs HFP), Motion **30 Hz**, seuil d'impact **initial 3,0 g au-dessus de g**
+Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 2026-09-25, était 60 s), `hvc1`, résolution **`.low` (360×640)** (décision 2026-09-26 : en `.medium` + audio stream, le SDK redescend seul à 360×640 et ~15 fps 22 % du temps),
+**24 fps**, audio **on — le son est indispensable** (Julian 2026-09-25) — **source : audio du stream SDK 1.0, PCM 16 kHz mono** (test A validé 2026-09-26 : synchro OK à l'oreille, écran verrouillé OK ; HFP écarté sans test B : 15 fps + conflit AirPods mesurés en P0), Motion **30 Hz**, seuil d'impact **initial 3,0 g au-dessus de g**
 (à calibrer en P2 — c'est une hypothèse, pas une mesure).
 
 ## Phasage — une phase = une milestone, tests bloquants

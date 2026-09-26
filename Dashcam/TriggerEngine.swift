@@ -4,6 +4,7 @@
 // (CoreMotion, fallback). Seuil initial 3,0 g au-dessus de g — hypothèse à calibrer en P2.
 enum TriggerSource: String, Sendable {
   case manual = "bouton"
+  case liveActivity = "Live Activity (écran verrouillé)"
   case captureButton = "bouton des lunettes"
   case impact = "choc"
   case phoneImpact = "choc (téléphone)"

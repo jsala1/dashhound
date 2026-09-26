@@ -29,7 +29,10 @@ targets:
     platform: iOS
     sources:
       - path: Dashcam
+      - path: Shared
     dependencies:
+      - target: DashhoundWidget
+        embed: true
       - package: MWDAT
         product: MWDATCore
       - package: MWDAT
@@ -50,6 +53,7 @@ targets:
         CFBundleDisplayName: Dashhound
         # Sans cette clé, iOS affiche l'app en mode compatibilité (écran réduit, bandes noires).
         UILaunchScreen: {}
+        NSSupportsLiveActivities: true
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
             CFBundleURLName: $(PRODUCT_BUNDLE_IDENTIFIER)
@@ -72,6 +76,24 @@ targets:
         NSPhotoLibraryAddUsageDescription: "Enregistrer les clips dans Photos."
         NSMotionUsageDescription: "Détection de choc de secours via le téléphone."
         NSCameraUsageDescription: "Utilisé uniquement par le simulateur de lunettes (MockDevice)."
+  DashhoundWidget:
+    # Live Activity (écran verrouillé + Dynamic Island) : rappel visible que la dashcam tourne.
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: DashhoundWidget
+      - path: Shared
+    info:
+      path: DashhoundWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Dashhound
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.juliansalaun.glassesdashcam.widget
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) WIDGET_EXTENSION
+        TARGETED_DEVICE_FAMILY: "1"
   DashcamTests:
     # Tests purs du RingBuffer, sans app hôte ni SDK : seuls les fichiers testés sont compilés.
     type: bundle.unit-test
