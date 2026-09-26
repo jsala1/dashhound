@@ -31,6 +31,8 @@ enum DashhoundState: Equatable {
   case ready(seconds: Int)
   /// Clip sauvé (bouton, choc, bouton des lunettes).
   case saved
+  /// Lunettes en pause après un tap sur la branche : clip sauvé, mais plus de film jusqu'au tap suivant.
+  case pausedByGlasses
   /// Pas de stream (pause, téléphone en poche sans session).
   case resting
   /// Lunettes déconnectées : le buffer est vide.
@@ -51,7 +53,7 @@ enum DashhoundState: Equatable {
     case .searching: "dashhound-sniff"
     case .watching: "dashhound-sit-alert"
     case .ready: "dashhound-face-alert"
-    case .saved: "dashhound-look-back"
+    case .saved, .pausedByGlasses: "dashhound-look-back"
     case .resting: "dashhound-play-bow"
     case .disconnected, .missingPermission: "dashhound-face-curious"
     case .tired: "dashhound-face-tired"
@@ -71,6 +73,7 @@ enum DashhoundState: Equatable {
     case .watching: "Je regarde."
     case .ready(let seconds): "\(seconds) s en mémoire."
     case .saved: "Sauvé !"
+    case .pausedByGlasses: "Sauvé. Tape la branche pour reprendre."
     case .resting: "Je m'étire."
     case .disconnected: "Hmm, je ne les vois plus."
     case .tired(_, let isHot): isHot ? "J'ai chaud." : "Je fatigue."
@@ -94,6 +97,7 @@ enum DashhoundState: Equatable {
   var warning: String? {
     switch self {
     case .disconnected: "Le buffer est vide."
+    case .pausedByGlasses: "Je ne filme plus en pause."
     default: nil
     }
   }
@@ -113,6 +117,7 @@ extension WearablesModel {
     if isThermalHot { return .tired(battery: batteryLevel, isHot: true) }
     if sessionState == .started, !isCameraGranted, cameraPermission != "—" { return .missingPermission }
     if !hasActiveDevice { return wantsSession ? .disconnected : .searching }
+    if streamState == .paused || sessionState == .paused { return .pausedByGlasses }
     if recorder.justSaved { return .saved }
     if recorder.isActive {
       let target = Int(recorder.bufferSeconds)

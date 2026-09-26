@@ -158,6 +158,13 @@ final class WearablesModel {
         startStreamIfReady()
         attachInputs()
       }
+    case .paused:
+      // Le tap (ou l'appui) sur la branche met la session en pause sans nous donner l'événement :
+      // la pause sert de déclencheur. La mémoire est intacte ; un second tap reprend le stream.
+      if recorder.isActive {
+        log.notice("[P2] pause des lunettes → sauvegarde")
+        Task { await recorder.save(trigger: .glassesPause) }
+      }
     case .stopped:
       detachInputs()
       // La session emporte la caméra (cascade parent → enfant) : le buffer est vide.
@@ -244,6 +251,7 @@ final class WearablesModel {
 
   private func streamStateChanged(_ state: StreamState, glassesName: String?, streamAudio: Bool) {
     streamState = state
+    recorder.isPausedByGlasses = state == .paused
     log.notice("stream=\(String(describing: state), privacy: .public)")
     switch state {
     case .streaming:

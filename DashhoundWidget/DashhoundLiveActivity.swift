@@ -53,7 +53,8 @@ struct DashhoundLiveActivity: Widget {
 }
 
 private func memoryLine(_ state: DashcamActivityAttributes.ContentState) -> String {
-  state.secondsInMemory >= state.targetSeconds
+  if state.isPaused { return "En pause — tape la branche pour reprendre" }
+  return state.secondsInMemory >= state.targetSeconds
     ? "\(state.targetSeconds) s en mémoire"
     : "Je regarde · \(state.secondsInMemory) / \(state.targetSeconds) s"
 }

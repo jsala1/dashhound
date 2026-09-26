@@ -6,6 +6,9 @@ enum TriggerSource: String, Sendable {
   case manual = "bouton"
   case liveActivity = "Live Activity (écran verrouillé)"
   case captureButton = "bouton des lunettes"
+  /// Tap sur la branche : les lunettes mettent la session en pause sans transmettre l'événement
+  /// (mesuré 2026-09-26) — la pause elle-même sert de déclencheur.
+  case glassesPause = "tap sur la branche (pause des lunettes)"
   case impact = "choc"
   case phoneImpact = "choc (téléphone)"
 }

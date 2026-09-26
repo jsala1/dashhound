@@ -39,11 +39,11 @@ final class LiveActivityController {
     }
   }
 
-  func update(secondsInMemory: Int, target: Int, lastClipAt: Date?, isSaving: Bool) {
+  func update(secondsInMemory: Int, target: Int, lastClipAt: Date?, isSaving: Bool, isPaused: Bool) {
     guard let activity else { return }
     let rounded = secondsInMemory >= target ? target : (secondsInMemory / 5) * 5
     let state = DashcamActivityAttributes.ContentState(
-      secondsInMemory: rounded, targetSeconds: target, lastClipAt: lastClipAt, isSaving: isSaving)
+      secondsInMemory: rounded, targetSeconds: target, lastClipAt: lastClipAt, isSaving: isSaving, isPaused: isPaused)
     guard state != lastState else { return }
     lastState = state
     let handle = ActivityHandle(activity: activity)

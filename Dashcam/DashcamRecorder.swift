@@ -58,6 +58,10 @@ final class DashcamRecorder {
   private(set) var justSaved = false
   private(set) var lastClip: SavedClip?
   private(set) var audioStatus = "—"
+  /// Lunettes en pause (tap sur la branche), renseigné par WearablesModel.
+  var isPausedByGlasses = false {
+    didSet { if isPausedByGlasses != oldValue { updateLiveActivity() } }
+  }
   var errorMessage: String?
 
   // MARK: - Pipeline (thread-safe, alimenté hors main actor)
@@ -143,7 +147,8 @@ final class DashcamRecorder {
 
   private func updateLiveActivity() {
     liveActivity.update(
-      secondsInMemory: availableSeconds, target: Int(bufferSeconds), lastClipAt: lastClip?.date, isSaving: isSaving)
+      secondsInMemory: availableSeconds, target: Int(bufferSeconds), lastClipAt: lastClip?.date, isSaving: isSaving,
+      isPaused: isPausedByGlasses)
   }
 
   // MARK: - Ingestion (hors main actor)
@@ -158,6 +163,7 @@ final class DashcamRecorder {
 
   /// Audio du stream SDK : son PTS est dans l'horloge des PTS vidéo (skill audio-streaming).
   nonisolated func ingestStreamAudio(_ frame: AudioFrame) {
+    guard frame.pcmBuffer.frameLength > 0 else { return }  // 1re trame vide à chaque (re)démarrage
     let now = CACurrentMediaTime()
     let pcm = calls.isOnCall ? frame.pcmBuffer.silenced() : frame.pcmBuffer
     guard let sample = pcm?.sampleBuffer(presentationTime: frame.presentationTimeStamp) else { return }

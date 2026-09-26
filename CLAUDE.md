@@ -141,6 +141,11 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   les événements loggés `[P2]`, appui court sur le bouton de capture → sauvegarde. Les tests P1 de
   demain incluent donc aussi : l'appui sur le bouton sauve-t-il (< 1 s) ? le tap du pavé tactile
   met-il le stream en pause ? `permissionDenied` avec l'App ID ?
+  **Mesuré 2026-09-26 (02:47)** : Inputs `active` avec l'App ID (pas de `permissionDenied`), mais
+  **aucun événement remonté** : appui sur le bouton de capture comme tap du pavé tactile mettent la
+  session en **pause** (reprise au geste suivant). → Contournement : **la pause des lunettes
+  déclenche la sauvegarde** (`TriggerSource.glassesPause`) ; second tap pour reprendre, rappel
+  affiché par la mascotte et la Live Activity (on ne filme plus pendant la pause).
 
 ## Idées retenues (hors phase en cours)
 

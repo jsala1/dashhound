@@ -12,6 +12,8 @@ struct DashcamActivityAttributes: ActivityAttributes {
     var targetSeconds: Int
     var lastClipAt: Date?
     var isSaving: Bool
+    /// Lunettes en pause (tap sur la branche) : on ne filme plus jusqu'au tap suivant.
+    var isPaused: Bool = false
   }
 
   var startedAt: Date
