@@ -70,10 +70,25 @@ targets:
         NSPhotoLibraryAddUsageDescription: "Enregistrer les clips dans Photos."
         NSMotionUsageDescription: "Détection de choc de secours via le téléphone."
         NSCameraUsageDescription: "Utilisé uniquement par le simulateur de lunettes (MockDevice)."
+  DashcamTests:
+    # Tests purs du RingBuffer, sans app hôte ni SDK : seuls les fichiers testés sont compilés.
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: DashcamTests
+      - path: Dashcam/RingBuffer.swift
+      - path: Dashcam/HEVCKeyframe.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.juliansalaun.glassesdashcam.tests
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   Dashcam:
     build:
       targets:
         Dashcam: all
+    test:
+      targets:
+        - DashcamTests
     run:
       config: Debug

@@ -51,7 +51,7 @@ Ray-Ban Meta ──stream hvc1 (BT Classic / Wi-Fi)──▶ App iOS
 |---|---|
 | `Dashcam/DashcamApp.swift` | `Wearables.configure()`, `.onOpenURL` → `handleUrl` (filtre `metaWearablesAction`) |
 | `Dashcam/WearablesModel.swift` | Registration Meta AI, `DeviceSession` (AutoDeviceSelector), permission `.camera`, état device (batterie, thermique), reconnexion auto |
-| `Dashcam/RingBuffer.swift` | Deque thread-safe de `(CMSampleBuffer, isKeyframe, hostTime)` ; éviction > `bufferSeconds + 15` ; `snapshot(seconds:)` renvoie les buffers depuis la **première keyframe ≥ now − seconds** |
+| `Dashcam/RingBuffer.swift` | Deque thread-safe de `(CMSampleBuffer, isKeyframe, hostTime)` ; éviction > `bufferSeconds + 15` ; `snapshot(seconds:now:)` renvoie les buffers depuis la **dernière keyframe ≤ now − seconds** (clip de 45 à 48 s, jamais tronqué ; décision 2026-09-26) · keyframes détectées par type de NAL (`HEVCKeyframe.swift`, copié du sample) · tests `DashcamTests` |
 | `Dashcam/ClipWriter.swift` | `AVAssetWriter` passthrough hvc1 (adapté de `VideoCaptureHandler` du sample), timestamps re-basés à zéro, audio optionnel |
 | `Dashcam/TriggerEngine.swift` | Sources : `.manual` (UI), `.captureButton` (Inputs), `.impact` (Motion : ‖a‖ − g > seuil, debounce 10 s, seuil réglable, log des pics), `.phoneImpact` (CoreMotion, fallback) |
 | `Dashcam/ClipStore.swift` | Sauvegarde Photos (`PHPhotoLibrary`) + copie dans Documents ; `UNUserNotification` ; historique des clips |
