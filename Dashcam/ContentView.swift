@@ -83,24 +83,17 @@ struct ContentView: View {
     }
   }
 
-  /// Action principale selon l'état : une seule, toujours lisible. Quand rien n'est possible, le
-  /// bouton dit pourquoi (fond `houndSoft`, texte `ink`) au lieu d'un orange délavé.
+  /// Action de la carte, seulement quand il y en a une : l'état lui-même est dit par la mascotte
+  /// et la jauge (pas de pseudo-bouton qui répète « Je cherche tes lunettes… »).
   private enum PrimaryAction {
     case connect, allowCamera, save(Int)
-    case waiting(String)
   }
 
-  private var primaryAction: PrimaryAction {
+  private var primaryAction: PrimaryAction? {
     if !model.isRegistered { return .connect }
     if model.sessionState == .started, !model.isCameraGranted { return .allowCamera }
-    if !model.wantsSession {
-      return .waiting(model.hasActiveDevice ? "Dashcam à l'arrêt" : "Je cherche tes lunettes…")
-    }
-    guard recorder.isActive else {
-      return model.hasActiveDevice ? .waiting("Démarrage…") : .waiting("Lunettes introuvables")
-    }
-    if recorder.isSaving { return .waiting("Sauvegarde…") }
-    return recorder.availableSeconds > 0 ? .save(recorder.availableSeconds) : .waiting("Je remplis la mémoire…")
+    guard recorder.isActive, recorder.availableSeconds > 0 else { return nil }
+    return .save(recorder.availableSeconds)
   }
 
   @ViewBuilder private var primaryButton: some View {
@@ -110,17 +103,13 @@ struct ContentView: View {
     case .allowCamera:
       primaryStyle("Autoriser la caméra…") { confirmCameraRedirect = true }
     case .save(let seconds):
-      primaryStyle("Sauver les \(min(seconds, Int(recorder.bufferSeconds))) s") {
+      primaryStyle(recorder.isSaving ? "Sauvegarde…" : "Sauver les \(min(seconds, Int(recorder.bufferSeconds))) s") {
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         Task { await recorder.save(trigger: .manual) }
       }
-    case .waiting(let reason):
-      Text(reason)
-        .font(.title3.weight(.semibold))
-        .foregroundStyle(Palette.ink)
-        .frame(maxWidth: .infinity, minHeight: 72)
-        .background(Palette.houndSoft, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .accessibilityAddTraits(.updatesFrequently)
+      .disabled(recorder.isSaving)
+    case nil:
+      EmptyView()
     }
   }
 
