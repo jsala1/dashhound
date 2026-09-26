@@ -10,6 +10,9 @@ options:
 configs:
   Debug: debug
   Release: release
+configFiles:
+  Debug: Base.xcconfig
+  Release: Base.xcconfig
 settings:
   base:
     SWIFT_VERSION: "6.0"

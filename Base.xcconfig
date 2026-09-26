@@ -1,0 +1,3 @@
+// Réglages communs Dashcam. Les identifiants Wearables Developer Center (META_APP_ID,
+// CLIENT_TOKEN) viennent de Config.xcconfig, gitignoré ; absent = Developer Mode sans attestation.
+#include? "Config.xcconfig"
