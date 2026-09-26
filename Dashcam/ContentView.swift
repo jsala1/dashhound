@@ -25,7 +25,6 @@ struct ContentView: View {
                 .accessibilityLabel("Mémoire")
                 .accessibilityValue("\(recorder.availableSeconds) secondes sur \(Int(recorder.bufferSeconds))")
             }
-            primaryButton
           }
           .padding(.vertical, 8)
         }
@@ -48,6 +47,7 @@ struct ContentView: View {
           row("Thermique", model.thermal)
           row("Session", model.sessionState.description)
           row("Stream", String(describing: model.streamState))
+          row("Bouton des lunettes", model.inputsStatus)
           row("Meta AI", model.registrationLabel)
         }
       }
@@ -113,10 +113,14 @@ struct ContentView: View {
     }
   }
 
-  /// Barre fixe en bas : démarrer / arrêter la dashcam, toujours à portée de pouce.
+  /// Barre fixe en bas, toujours sous le pouce : l'action du moment (Sauver les N s, Connecter,
+  /// Autoriser la caméra) puis Démarrer / Arrêter la dashcam.
   private var dashcamBar: some View {
-    Group {
-      if model.wantsSession {
+    VStack(spacing: 8) {
+      primaryButton
+      if !model.isRegistered {
+        EmptyView()
+      } else if model.wantsSession {
         Button(role: .destructive) { model.stopSession() } label: {
           Label("Arrêter la dashcam", systemImage: "stop.fill")
             .font(.headline)

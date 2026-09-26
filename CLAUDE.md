@@ -134,6 +134,14 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   sans floutage. Le post LinkedIn n'utilisera qu'un clip **sans tiers identifiable**.
 - 📷 **FOV** — le stream est plus étroit que les photos (retour dev GitHub #54). Acceptable.
 
+## Dérogations au phasage
+
+- **2026-09-26 — sonde P2 « bouton des lunettes » avant la fin des tests P1** (décision Julian :
+  « on déroge, on augmente juste les tests demain »). `MWDATInputs` attaché à chaque session : tous
+  les événements loggés `[P2]`, appui court sur le bouton de capture → sauvegarde. Les tests P1 de
+  demain incluent donc aussi : l'appui sur le bouton sauve-t-il (< 1 s) ? le tap du pavé tactile
+  met-il le stream en pause ? `permissionDenied` avec l'App ID ?
+
 ## Idées retenues (hors phase en cours)
 
 - **Indicateur sur l'écran verrouillé** (idée Julian 2026-09-25) : Live Activity (ActivityKit) sur

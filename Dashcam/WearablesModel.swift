@@ -3,6 +3,7 @@
 // (batterie, thermique, port, lien) et reconnexion auto. Cf. CLAUDE.md.
 import MWDATCamera
 import MWDATCore
+import MWDATInputs
 import Observation
 import os
 
@@ -26,6 +27,8 @@ final class WearablesModel {
   private(set) var isCameraGranted = false
   private(set) var isMicrophoneGranted = false
   private(set) var streamState: StreamState = .stopped
+  /// Bouton des lunettes (MWDATInputs, expérimental) — sonde P2 anticipée (décision Julian 2026-09-26).
+  private(set) var inputsStatus = "—"
   var errorMessage: String?
 
   let recorder: DashcamRecorder
@@ -61,6 +64,9 @@ final class WearablesModel {
   @ObservationIgnored private var camera: MWDATCamera.Camera?
   @ObservationIgnored private let streamTokens = ListenerTokenBag()
   @ObservationIgnored private var restartStreamWhenStopped = false
+  @ObservationIgnored private var inputs: Inputs?
+  @ObservationIgnored private var inputsTask: Task<Void, Never>?
+  @ObservationIgnored private let inputTokens = ListenerTokenBag()
   @ObservationIgnored private let log = Logger(subsystem: "com.julian.glassesdashcam", category: "Wearables")
 
   init(recorder: DashcamRecorder, wearables: WearablesInterface = Wearables.shared) {
@@ -150,8 +156,10 @@ final class WearablesModel {
         await refreshCameraPermission()
         await refreshMicrophonePermission()
         startStreamIfReady()
+        attachInputs()
       }
     case .stopped:
+      detachInputs()
       // La session emporte la caméra (cascade parent → enfant) : le buffer est vide.
       clearStream()
       sessionTokens.clear()
@@ -257,6 +265,59 @@ final class WearablesModel {
     camera = nil
     streamState = .stopped
     recorder.streamDidStop()
+  }
+
+  // MARK: - Bouton des lunettes (MWDATInputs)
+
+  /// Sonde P2 anticipée : tous les événements sont loggés ; un appui court sur le bouton de capture
+  /// sauve les 45 dernières secondes. Le tap du pavé tactile est seulement observé (bug connu : il
+  /// peut mettre le stream en pause).
+  private func attachInputs() {
+    guard let session, sessionState == .started, inputs == nil else { return }
+    do {
+      guard let newInputs = try session.addInputs() else {
+        inputsStatus = "indisponible"
+        return
+      }
+      inputs = newInputs
+      newInputs.statePublisher.listen { @Sendable [weak self] state in
+        Task { @MainActor in
+          self?.inputsStatus = state == .active ? "actif" : state.description
+          self?.log.notice("[P2] inputs=\(state.description, privacy: .public)")
+        }
+      }.store(in: inputTokens)
+      newInputs.errorPublisher.listen { @Sendable [weak self] error in
+        Task { @MainActor in
+          self?.inputsStatus = error == .permissionDenied ? "refusé (Developer Center)" : error.description
+          self?.log.error("[P2] inputs erreur : \(error.description, privacy: .public)")
+        }
+      }.store(in: inputTokens)
+      let events = newInputs.events
+      inputsTask = Task { [weak self] in
+        for await event in events {
+          self?.handleInput(event)
+        }
+      }
+      log.notice("[P2] inputs attachés")
+    } catch {
+      inputsStatus = "erreur : \(error.localizedDescription)"
+      log.error("[P2] addInputs : \(error.localizedDescription, privacy: .public)")
+    }
+  }
+
+  private func detachInputs() {
+    inputsTask?.cancel()
+    inputsTask = nil
+    inputTokens.clear()
+    inputs = nil
+    inputsStatus = "—"
+  }
+
+  private func handleInput(_ event: InputEvent) {
+    log.notice("[P2] ÉVÉNEMENT \(String(describing: event), privacy: .public) — stream=\(String(describing: self.streamState), privacy: .public)")
+    if case .capture(.shortPress, _, _) = event {
+      Task { await recorder.save(trigger: .captureButton) }
+    }
   }
 
   // MARK: - Permissions
