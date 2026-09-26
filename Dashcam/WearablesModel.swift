@@ -170,10 +170,6 @@ final class WearablesModel {
     case .paused:
       // Le tap (ou l'appui) sur la branche met la session en pause sans nous donner l'événement :
       // la pause sert de déclencheur. La mémoire est intacte ; un second tap reprend le stream.
-      if recorder.isActive {
-        log.notice("[P2] pause des lunettes → sauvegarde")
-        Task { await recorder.save(trigger: .glassesPause) }
-      }
       scheduleAutoResume()
     case .stopped:
       detachInputs()
@@ -188,16 +184,20 @@ final class WearablesModel {
   }
 
   /// La dashcam ne s'arrête que sur « Arrêter la dashcam » (Julian, 2026-09-26). Une pause imposée
-  /// par les lunettes (tap sur la branche) ne se relance pas depuis l'app : si l'utilisateur n'a pas
-  /// retapé après 1,5 s, on ferme la session ; la reconnexion auto en rouvre une neuve 2 s plus tard
-  /// (plancher recommandé par Meta, issue #231).
+  /// par les lunettes (tap sur la branche) ne se relance pas depuis l'app : on sauve le clip, puis on
+  /// ferme la session en pause ; la reconnexion auto en rouvre une neuve 2 s plus tard (plancher
+  /// recommandé par Meta, issue #231). Ordre imposé : la fermeture vide la mémoire.
   private func scheduleAutoResume() {
-    guard wantsSession, autoResumeTask == nil else { return }
+    guard autoResumeTask == nil else { return }
     autoResumeTask = Task { [weak self] in
-      try? await Task.sleep(for: .seconds(1.5))
-      guard !Task.isCancelled, let self, self.wantsSession, self.sessionState == .paused else { return }
-      self.log.notice("[P2] reprise auto : la pause dure, on rouvre une session")
+      guard let self else { return }
+      if self.recorder.isActive {
+        self.log.notice("[P2] pause des lunettes → sauvegarde")
+        await self.recorder.save(trigger: .glassesPause)
+      }
       self.autoResumeTask = nil
+      guard !Task.isCancelled, self.wantsSession, self.sessionState == .paused else { return }
+      self.log.notice("[P2] reprise auto : on ferme la session en pause pour en rouvrir une")
       self.session?.stop()
     }
   }
