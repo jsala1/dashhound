@@ -196,7 +196,9 @@ final class WearablesModel {
         await self.recorder.save(trigger: .glassesPause)
       }
       self.autoResumeTask = nil
-      guard !Task.isCancelled, self.wantsSession, self.sessionState == .paused else { return }
+      guard !Task.isCancelled, self.wantsSession,
+        self.sessionState == .paused || self.streamState == .paused
+      else { return }
       self.log.notice("[P2] reprise auto : on ferme la session en pause pour en rouvrir une")
       self.session?.stop()
     }
@@ -279,6 +281,9 @@ final class WearablesModel {
     recorder.isPausedByGlasses = state == .paused
     log.notice("stream=\(String(describing: state), privacy: .public)")
     switch state {
+    case .paused:
+      // Le stream signale la pause ~1 s avant la session (mesuré) : on réagit au premier des deux.
+      scheduleAutoResume()
     case .streaming:
       recorder.streamDidStart(glassesName: glassesName, streamAudio: streamAudio)
     case .stopped:
