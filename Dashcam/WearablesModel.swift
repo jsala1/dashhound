@@ -116,10 +116,10 @@ final class WearablesModel {
       let newSession = try wearables.createSession(deviceSelector: selector)
       session = newSession
       // S'abonner avant start() pour ne rater aucune transition (skill session-lifecycle).
-      newSession.statePublisher.listen { [weak self] state in
+      newSession.statePublisher.listen { @Sendable [weak self] state in
         Task { @MainActor in self?.sessionStateChanged(state) }
       }.store(in: sessionTokens)
-      newSession.errorPublisher.listen { [weak self] error in
+      newSession.errorPublisher.listen { @Sendable [weak self] error in
         Task { @MainActor in
           self?.log.error("session error: \(error.localizedDescription, privacy: .public)")
           self?.errorMessage = error.localizedDescription
@@ -197,20 +197,21 @@ final class WearablesModel {
       let stream = newCamera.stream
       let recorder = recorder
       let glassesName = deviceName
-      stream.statePublisher.listen { [weak self] state in
+      // Callbacks du SDK sur ses propres threads : closures @Sendable, jamais isolées au main actor.
+      stream.statePublisher.listen { @Sendable [weak self] state in
         Task { @MainActor in self?.streamStateChanged(state, glassesName: glassesName, streamAudio: streamAudio) }
       }.store(in: streamTokens)
-      stream.errorPublisher.listen { [weak self] error in
+      stream.errorPublisher.listen { @Sendable [weak self] error in
         Task { @MainActor in
           self?.log.error("stream error: \(error.localizedDescription, privacy: .public)")
           self?.errorMessage = error.localizedDescription
         }
       }.store(in: streamTokens)
-      stream.videoFramePublisher.listen { frame in
+      stream.videoFramePublisher.listen { @Sendable frame in
         recorder.ingestVideo(frame.sampleBuffer)
       }.store(in: streamTokens)
       if streamAudio {
-        stream.audioFramePublisher.listen { frame in
+        stream.audioFramePublisher.listen { @Sendable frame in
           recorder.ingestStreamAudio(frame)
         }.store(in: streamTokens)
       }
@@ -313,10 +314,10 @@ final class WearablesModel {
       return
     }
     // L'état est relu sur le Device à chaque notification (livrée à l'abonnement puis à chaque changement).
-    device.addDeviceStateListener { [weak self] _ in
+    device.addDeviceStateListener { @Sendable [weak self] _ in
       Task { @MainActor in self?.read(device) }
     }.store(in: deviceTokens)
-    device.addLinkStateListener { [weak self] _ in
+    device.addLinkStateListener { @Sendable [weak self] _ in
       Task { @MainActor in self?.read(device) }
     }.store(in: deviceTokens)
     read(device)

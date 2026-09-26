@@ -48,6 +48,8 @@ targets:
       path: Dashcam/Info.plist
       properties:
         CFBundleDisplayName: Dashhound
+        # Sans cette clé, iOS affiche l'app en mode compatibilité (écran réduit, bandes noires).
+        UILaunchScreen: {}
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
             CFBundleURLName: $(PRODUCT_BUNDLE_IDENTIFIER)

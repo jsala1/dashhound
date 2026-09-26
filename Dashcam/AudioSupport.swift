@@ -36,7 +36,9 @@ final class AudioKeepAlive {
     if format.sampleRate == 0 || format.channelCount == 0 {
       format = AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 2)!
     }
-    let source = AVAudioSourceNode(format: format) { _, _, _, audioBufferList -> OSStatus in
+    // @Sendable : appelé sur le thread de rendu audio. Sans cette annotation, la closure hérite de
+    // @MainActor et le contrôle d'isolation de Swift 6 fait un trap (SIGTRAP) au premier rendu.
+    let source = AVAudioSourceNode(format: format) { @Sendable _, _, _, audioBufferList -> OSStatus in
       for buffer in UnsafeMutableAudioBufferListPointer(audioBufferList) {
         if let data = buffer.mData { memset(data, 0, Int(buffer.mDataByteSize)) }
       }
@@ -101,7 +103,7 @@ final class HFPMicrophone {
       log.error("HFP : format d'entrée nul, enregistrement vidéo seule")
       return false
     }
-    engine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, time in
+    engine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { @Sendable buffer, time in
       guard let copy = buffer.copied() else { return }
       onBuffer(copy, AVAudioTime.seconds(forHostTime: time.hostTime))
     }
