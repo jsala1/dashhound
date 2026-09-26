@@ -42,7 +42,7 @@ struct ContentView: View {
         }
 
         Section("Lunettes") {
-          row("Appareil", model.deviceName ?? (model.hasActiveDevice ? "…" : "aucun"))
+          row("Appareil", model.deviceName ?? (model.hasActiveDevice ? "…" : String(localized: "aucun")))
           row("Batterie", model.batteryLevel.map { "\($0) %" } ?? "—")
           row("Thermique", model.thermal)
           row("Session", model.sessionState.description)
@@ -100,11 +100,11 @@ struct ContentView: View {
   @ViewBuilder private var primaryButton: some View {
     switch primaryAction {
     case .connect:
-      primaryStyle("Connecter mes lunettes") { model.register() }
+      primaryStyle(Text("Connecter mes lunettes")) { model.register() }
     case .allowCamera:
-      primaryStyle("Autoriser la caméra…") { confirmCameraRedirect = true }
+      primaryStyle(Text("Autoriser la caméra…")) { confirmCameraRedirect = true }
     case .save(let seconds):
-      primaryStyle(recorder.isSaving ? "Sauvegarde…" : "Sauver les \(min(seconds, Int(recorder.bufferSeconds))) s") {
+      primaryStyle(recorder.isSaving ? Text("Sauvegarde…") : Text("Sauver les \(min(seconds, Int(recorder.bufferSeconds))) s")) {
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         Task { await recorder.save(trigger: .manual) }
       }
@@ -148,9 +148,9 @@ struct ContentView: View {
     .background(.bar)
   }
 
-  private func primaryStyle(_ title: String, action: @escaping () -> Void) -> some View {
+  private func primaryStyle(_ title: Text, action: @escaping () -> Void) -> some View {
     Button(action: action) {
-      Text(title)
+      title
         .font(.title2.bold())
         .monospacedDigit()
         .foregroundStyle(Palette.onHound)
@@ -169,7 +169,7 @@ struct ContentView: View {
       VStack(alignment: .leading, spacing: 2) {
         Text("\(Int(clip.duration.rounded())) s · \(clip.date.formatted(date: .omitted, time: .shortened))")
           .font(.headline).monospacedDigit()
-        Text(clip.savedToPhotos ? "Dans Photos" : "Gardé dans l'app (pas dans Photos)")
+        (clip.savedToPhotos ? Text("Dans Photos") : Text("Gardé dans l'app (pas dans Photos)"))
           .font(.subheadline).foregroundStyle(clip.savedToPhotos ? Palette.ok : Palette.warn)
         if clip.audioMutedForCall {
           Text("Son coupé pendant un appel").font(.subheadline).foregroundStyle(Palette.inkMuted)
@@ -193,7 +193,7 @@ struct ContentView: View {
       })
   }
 
-  private func row(_ label: String, _ value: String) -> some View {
+  private func row(_ label: LocalizedStringKey, _ value: String) -> some View {
     LabeledContent(label, value: value)
   }
 }

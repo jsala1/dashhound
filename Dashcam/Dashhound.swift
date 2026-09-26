@@ -68,17 +68,17 @@ enum DashhoundState: Equatable {
   /// Ligne du chien, à la première personne.
   var line: String {
     switch self {
-    case .onboarding: "Salut, moi c'est Dashhound."
-    case .searching: "Je cherche tes lunettes…"
-    case .watching: "Je regarde."
-    case .ready(let seconds): "\(seconds) s en mémoire."
-    case .saved: "Sauvé !"
-    case .pausedByGlasses: "Sauvé. Tape la branche pour reprendre."
-    case .resting: "Je m'étire."
-    case .disconnected: "Hmm, je ne les vois plus."
-    case .tired(_, let isHot): isHot ? "J'ai chaud." : "Je fatigue."
-    case .missingPermission: "Il me manque une autorisation."
-    case .exported: "Bien joué."
+    case .onboarding: String(localized: "Salut, moi c'est Dashhound.")
+    case .searching: String(localized: "Je cherche tes lunettes…")
+    case .watching: String(localized: "Je regarde.")
+    case .ready(let seconds): String(localized: "\(seconds) s en mémoire.")
+    case .saved: String(localized: "Sauvé !")
+    case .pausedByGlasses: String(localized: "Sauvé. Tape la branche pour reprendre.")
+    case .resting: String(localized: "Je m'étire.")
+    case .disconnected: String(localized: "Hmm, je ne les vois plus.")
+    case .tired(_, let isHot): isHot ? String(localized: "J'ai chaud.") : String(localized: "Je fatigue.")
+    case .missingPermission: String(localized: "Il me manque une autorisation.")
+    case .exported: String(localized: "Bien joué.")
     case .about: "Dashhound · Rewind"
     }
   }
@@ -96,8 +96,8 @@ enum DashhoundState: Equatable {
   /// Information critique à ne jamais taire.
   var warning: String? {
     switch self {
-    case .disconnected: "Le buffer est vide."
-    case .pausedByGlasses: "Je ne filme plus en pause."
+    case .disconnected: String(localized: "Le buffer est vide.")
+    case .pausedByGlasses: String(localized: "Je ne filme plus en pause.")
     default: nil
     }
   }

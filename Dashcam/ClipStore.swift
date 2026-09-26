@@ -46,7 +46,7 @@ enum ClipStore {
         photosError = error.localizedDescription
       }
     } else {
-      photosError = "Accès à Photos refusé"
+      photosError = String(localized: "Accès à Photos refusé")
     }
     if let photosError { log.error("Photos : \(photosError, privacy: .public)") }
 

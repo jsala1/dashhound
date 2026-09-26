@@ -1,0 +1,888 @@
+{
+  "sourceLanguage": "fr",
+  "strings": {
+    "%lld s en mémoire.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld s in memory."
+          }
+        }
+      }
+    },
+    "%lld s · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld s · %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld s · %2$@"
+          }
+        }
+      }
+    },
+    "%lld secondes sur %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld seconds out of %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld secondes sur %2$lld"
+          }
+        }
+      }
+    },
+    "Accès à Photos refusé": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos access denied"
+          }
+        }
+      }
+    },
+    "Appareil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device"
+          }
+        }
+      }
+    },
+    "Arrêter la dashcam": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop dashcam"
+          }
+        }
+      }
+    },
+    "Autoriser la caméra…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow camera…"
+          }
+        }
+      }
+    },
+    "Autoriser le micro des lunettes…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow glasses microphone…"
+          }
+        }
+      }
+    },
+    "Batterie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery"
+          }
+        }
+      }
+    },
+    "Bien joué.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nice one."
+          }
+        }
+      }
+    },
+    "Bouton des lunettes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glasses button"
+          }
+        }
+      }
+    },
+    "Caméra des lunettes indisponible, réessaie.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glasses camera unavailable, try again."
+          }
+        }
+      }
+    },
+    "Changer un réglage relance le stream : la mémoire repart de zéro.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changing a setting restarts the stream: memory starts from zero."
+          }
+        }
+      }
+    },
+    "Clip gardé dans l'app, mais pas dans Photos : %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clip kept in the app, but not in Photos: %@"
+          }
+        }
+      }
+    },
+    "Clip sauvé": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clip saved"
+          }
+        }
+      }
+    },
+    "Connecter mes lunettes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect my glasses"
+          }
+        }
+      }
+    },
+    "Dans Photos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Photos"
+          }
+        }
+      }
+    },
+    "Dashcam": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashcam"
+          }
+        }
+      }
+    },
+    "Dashcam démarrée": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashcam started"
+          }
+        }
+      }
+    },
+    "Dashhound": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashhound"
+          }
+        }
+      }
+    },
+    "Dashhound — son coupé pendant un appel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashhound — sound muted during a call"
+          }
+        }
+      }
+    },
+    "Dernier clip": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last clip"
+          }
+        }
+      }
+    },
+    "Démarrer la dashcam": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start dashcam"
+          }
+        }
+      }
+    },
+    "Erreur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
+          }
+        }
+      }
+    },
+    "Gardé dans l'app (pas dans Photos)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept in the app (not in Photos)"
+          }
+        }
+      }
+    },
+    "HFP : %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HFP: %@"
+          }
+        }
+      }
+    },
+    "Hmm, je ne les vois plus.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hmm, I can't see them anymore."
+          }
+        }
+      }
+    },
+    "Il me manque une autorisation.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm missing a permission."
+          }
+        }
+      }
+    },
+    "Image": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image"
+          }
+        }
+      }
+    },
+    "J'ai chaud.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm hot."
+          }
+        }
+      }
+    },
+    "Je cherche tes lunettes…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looking for your glasses…"
+          }
+        }
+      }
+    },
+    "Je fatigue.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm getting tired."
+          }
+        }
+      }
+    },
+    "Je m'étire.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stretching."
+          }
+        }
+      }
+    },
+    "Je ne filme plus en pause.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm not filming while paused."
+          }
+        }
+      }
+    },
+    "Je regarde.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watching."
+          }
+        }
+      }
+    },
+    "L'app va ouvrir Meta AI pour autoriser la caméra des lunettes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app will open Meta AI to allow the glasses camera."
+          }
+        }
+      }
+    },
+    "L'app va ouvrir Meta AI pour autoriser le micro des lunettes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app will open Meta AI to allow the glasses microphone."
+          }
+        }
+      }
+    },
+    "Le buffer est vide.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The buffer is empty."
+          }
+        }
+      }
+    },
+    "Lunettes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glasses"
+          }
+        }
+      }
+    },
+    "Lunettes Meta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meta glasses"
+          }
+        }
+      }
+    },
+    "Meta AI": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meta AI"
+          }
+        }
+      }
+    },
+    "Micro des lunettes (Bluetooth mains libres)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glasses microphone (Bluetooth hands-free)"
+          }
+        }
+      }
+    },
+    "Micro des lunettes (stream)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glasses microphone (stream)"
+          }
+        }
+      }
+    },
+    "Mémoire": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Ouvrir Meta AI": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Meta AI"
+          }
+        }
+      }
+    },
+    "Rien en mémoire à sauver pour l'instant.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing in memory to save yet."
+          }
+        }
+      }
+    },
+    "Rien en mémoire à sauver.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing in memory to save."
+          }
+        }
+      }
+    },
+    "Rien à sauver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to save"
+          }
+        }
+      }
+    },
+    "Réglages": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "Résolution": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolution"
+          }
+        }
+      }
+    },
+    "Salut, moi c'est Dashhound.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hi, I'm Dashhound."
+          }
+        }
+      }
+    },
+    "Sans son": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sound"
+          }
+        }
+      }
+    },
+    "Sauve les 45 dernières secondes de la dashcam dans Photos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saves the last 45 seconds of the dashcam to Photos."
+          }
+        }
+      }
+    },
+    "Sauvegarde…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving…"
+          }
+        }
+      }
+    },
+    "Sauver les %lld s": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save the last %lld s"
+          }
+        }
+      }
+    },
+    "Sauver les 45 s": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save the last 45 s"
+          }
+        }
+      }
+    },
+    "Sauvé !": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved!"
+          }
+        }
+      }
+    },
+    "Sauvé. Tape la branche pour reprendre.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved. Tap the temple to resume."
+          }
+        }
+      }
+    },
+    "Session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session"
+          }
+        }
+      }
+    },
+    "Son": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound"
+          }
+        }
+      }
+    },
+    "Son coupé pendant un appel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound muted during a call"
+          }
+        }
+      }
+    },
+    "Son des clips": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clip sound"
+          }
+        }
+      }
+    },
+    "Stream": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stream"
+          }
+        }
+      }
+    },
+    "Test P1 : comparer « stream » et « mains libres ». Le son est coupé pendant un appel.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "P1 test: compare “stream” and “hands-free”. Sound is muted during a call."
+          }
+        }
+      }
+    },
+    "Thermique": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thermal"
+          }
+        }
+      }
+    },
+    "Voir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View"
+          }
+        }
+      }
+    },
+    "accordée": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "granted"
+          }
+        }
+      }
+    },
+    "actif": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "active"
+          }
+        }
+      }
+    },
+    "aucun": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "none"
+          }
+        }
+      }
+    },
+    "coupé (réglage)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "off (setting)"
+          }
+        }
+      }
+    },
+    "coupé pendant l'appel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muted during the call"
+          }
+        }
+      }
+    },
+    "en cours…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in progress…"
+          }
+        }
+      }
+    },
+    "enregistrée": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "registered"
+          }
+        }
+      }
+    },
+    "erreur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "error"
+          }
+        }
+      }
+    },
+    "erreur : %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "error: %@"
+          }
+        }
+      }
+    },
+    "indisponible": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unavailable"
+          }
+        }
+      }
+    },
+    "micro HFP indisponible — vidéo seule": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HFP microphone unavailable — video only"
+          }
+        }
+      }
+    },
+    "non accordée": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not granted"
+          }
+        }
+      }
+    },
+    "non enregistrée": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not registered"
+          }
+        }
+      }
+    },
+    "permission micro manquante — vidéo seule": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "microphone permission missing — video only"
+          }
+        }
+      }
+    },
+    "refusé (Developer Center)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "denied (Developer Center)"
+          }
+        }
+      }
+    },
+    "stream (en attente des premières trames)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "stream (waiting for first frames)"
+          }
+        }
+      }
+    },
+    "stream : %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "stream: %@"
+          }
+        }
+      }
+    },
+    "« Hey Meta »": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“Hey Meta”"
+          }
+        }
+      }
+    },
+    "Écriture du clip impossible : %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't write the clip: %@"
+          }
+        }
+      }
+    },
+    "à l'écoute": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "listening"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

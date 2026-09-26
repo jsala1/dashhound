@@ -1,0 +1,112 @@
+{
+  "sourceLanguage": "fr",
+  "strings": {
+    "%lld s": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld s"
+          }
+        }
+      }
+    },
+    "%lld s en mémoire": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld s in memory"
+          }
+        }
+      }
+    },
+    "%llds": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%llds"
+          }
+        }
+      }
+    },
+    "Dashhound regarde": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashhound is watching"
+          }
+        }
+      }
+    },
+    "Dernier clip à %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last clip at %@"
+          }
+        }
+      }
+    },
+    "En pause — tape la branche pour reprendre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused — tap the temple to resume"
+          }
+        }
+      }
+    },
+    "Je regarde · %lld / %lld s": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watching · %lld / %lld s"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Je regarde · %1$lld / %2$lld s"
+          }
+        }
+      }
+    },
+    "Sauve les 45 dernières secondes de la dashcam dans Photos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saves the last 45 seconds of the dashcam to Photos."
+          }
+        }
+      }
+    },
+    "Sauver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Sauver les 45 s": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save the last 45 s"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

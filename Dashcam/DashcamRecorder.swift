@@ -13,9 +13,9 @@ enum AudioSource: String, CaseIterable, Identifiable, Sendable {
   var id: String { rawValue }
   var label: String {
     switch self {
-    case .stream: "Micro des lunettes (stream)"
-    case .hfp: "Micro des lunettes (Bluetooth mains libres)"
-    case .off: "Sans son"
+    case .stream: String(localized: "Micro des lunettes (stream)")
+    case .hfp: String(localized: "Micro des lunettes (Bluetooth mains libres)")
+    case .off: String(localized: "Sans son")
     }
   }
 }
@@ -58,6 +58,7 @@ final class DashcamRecorder {
   private(set) var justSaved = false
   private(set) var lastClip: SavedClip?
   private(set) var audioStatus = "—"
+  private var awaitingStreamAudio = false
   /// Lunettes en pause (tap sur la branche), renseigné par WearablesModel.
   var isPausedByGlasses = false {
     didSet { if isPausedByGlasses != oldValue { updateLiveActivity() } }
@@ -100,14 +101,17 @@ final class DashcamRecorder {
     ring.clear()
     switch audioSource {
     case .stream:
-      audioStatus = streamAudio ? "stream (en attente des premières trames)" : "permission micro manquante — vidéo seule"
+      awaitingStreamAudio = streamAudio
+      audioStatus = streamAudio
+        ? String(localized: "stream (en attente des premières trames)")
+        : String(localized: "permission micro manquante — vidéo seule")
     case .hfp:
       let ok = hfp.start(preferring: glassesName) { [weak self] buffer, hostTime in
         self?.ingestHFPAudio(buffer, hostTime: hostTime)
       }
-      audioStatus = ok ? "HFP : \(hfp.inputName ?? "?")" : "micro HFP indisponible — vidéo seule"
+      audioStatus = ok ? String(localized: "HFP : \(hfp.inputName ?? "?")") : String(localized: "micro HFP indisponible — vidéo seule")
     case .off:
-      audioStatus = "coupé (réglage)"
+      audioStatus = String(localized: "coupé (réglage)")
     }
     // Après le HFP (qui fixe la catégorie playAndRecord), sinon catégorie playback + mix.
     keepAlive.start()
@@ -138,10 +142,11 @@ final class DashcamRecorder {
 
   private func refresh() {
     availableSeconds = Int(ring.availableSeconds(now: CACurrentMediaTime()).rounded(.down))
-    if audioSource == .stream, audioStatus.hasPrefix("stream (en attente"), telemetry.audioSamplesSeen > 0 {
-      audioStatus = "stream : \(telemetry.audioFormatDescription)"
+    if awaitingStreamAudio, telemetry.audioSamplesSeen > 0 {
+      awaitingStreamAudio = false
+      audioStatus = String(localized: "stream : \(telemetry.audioFormatDescription)")
     }
-    if calls.isOnCall { audioStatus = "coupé pendant l'appel" }
+    if calls.isOnCall { audioStatus = String(localized: "coupé pendant l'appel") }
     updateLiveActivity()
   }
 
@@ -189,7 +194,7 @@ final class DashcamRecorder {
     guard !isSaving else { return false }
     let now = CACurrentMediaTime()
     guard let snapshot = ring.snapshot(seconds: bufferSeconds, now: now) else {
-      errorMessage = "Rien en mémoire à sauver pour l'instant."
+      errorMessage = String(localized: "Rien en mémoire à sauver pour l'instant.")
       return false
     }
     isSaving = true
@@ -204,7 +209,7 @@ final class DashcamRecorder {
     let started = CACurrentMediaTime()
     do {
       let duration = try await ClipWriter.write(
-        snapshot, to: url, description: muted ? "Dashhound — son coupé pendant un appel" : "Dashhound")
+        snapshot, to: url, description: muted ? String(localized: "Dashhound — son coupé pendant un appel") : "Dashhound")
       let clip = await ClipStore.publish(url, duration: duration, date: date, audioMutedForCall: muted)
       lastClip = clip
       UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -212,7 +217,9 @@ final class DashcamRecorder {
       log.notice(
         "[P1] CLIP sauvé (\(trigger.rawValue, privacy: .public)) durée=\(String(format: "%.1f", duration), privacy: .public) s vidéo=\(snapshot.video.count, privacy: .public) audio=\(snapshot.audio.count, privacy: .public) écriture=\(String(format: "%.2f", elapsed), privacy: .public) s Photos=\(clip.savedToPhotos, privacy: .public) \(url.lastPathComponent, privacy: .public)"
       )
-      if let photosError = clip.photosError { errorMessage = "Clip gardé dans l'app, mais pas dans Photos : \(photosError)" }
+      if let photosError = clip.photosError {
+        errorMessage = String(localized: "Clip gardé dans l'app, mais pas dans Photos : \(photosError)")
+      }
       justSaved = true
       savedFlashTask?.cancel()
       savedFlashTask = Task { [weak self] in

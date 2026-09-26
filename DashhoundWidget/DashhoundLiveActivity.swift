@@ -53,10 +53,10 @@ struct DashhoundLiveActivity: Widget {
 }
 
 private func memoryLine(_ state: DashcamActivityAttributes.ContentState) -> String {
-  if state.isPaused { return "En pause — tape la branche pour reprendre" }
+  if state.isPaused { return String(localized: "En pause — tape la branche pour reprendre") }
   return state.secondsInMemory >= state.targetSeconds
-    ? "\(state.targetSeconds) s en mémoire"
-    : "Je regarde · \(state.secondsInMemory) / \(state.targetSeconds) s"
+    ? String(localized: "\(state.targetSeconds) s en mémoire")
+    : String(localized: "Je regarde · \(state.secondsInMemory) / \(state.targetSeconds) s")
 }
 
 private struct LockScreenView: View {
@@ -90,7 +90,7 @@ private struct SaveButton: View {
 
   var body: some View {
     Button(intent: SaveClipIntent()) {
-      Text(state.isSaving ? "…" : "Sauver")
+      (state.isSaving ? Text(verbatim: "…") : Text("Sauver"))
         .font(.headline)
         .foregroundStyle(Tone.ink)
         .padding(.horizontal, 16)

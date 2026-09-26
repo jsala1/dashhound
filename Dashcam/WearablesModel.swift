@@ -46,10 +46,10 @@ final class WearablesModel {
 
   var registrationLabel: String {
     switch registrationState {
-    case .registered: return "enregistrée"
-    case .registering: return "en cours…"
-    case .available: return "non enregistrée"
-    case .unavailable: return "indisponible"
+    case .registered: return String(localized: "enregistrée")
+    case .registering: return String(localized: "en cours…")
+    case .available: return String(localized: "non enregistrée")
+    case .unavailable: return String(localized: "indisponible")
     @unknown default: return "?"
     }
   }
@@ -209,7 +209,7 @@ final class WearablesModel {
       frameRate: 24)
     do {
       guard let newCamera = try session.addCamera(config: config) else {
-        errorMessage = "Caméra des lunettes indisponible, réessaie."
+        errorMessage = String(localized: "Caméra des lunettes indisponible, réessaie.")
         return
       }
       camera = newCamera
@@ -288,19 +288,19 @@ final class WearablesModel {
     guard let session, sessionState == .started, inputs == nil else { return }
     do {
       guard let newInputs = try session.addInputs() else {
-        inputsStatus = "indisponible"
+        inputsStatus = String(localized: "indisponible")
         return
       }
       inputs = newInputs
       newInputs.statePublisher.listen { @Sendable [weak self] state in
         Task { @MainActor in
-          self?.inputsStatus = state == .active ? "actif" : state.description
+          self?.inputsStatus = state == .active ? String(localized: "actif") : state.description
           self?.log.notice("[P2] inputs=\(state.description, privacy: .public)")
         }
       }.store(in: inputTokens)
       newInputs.errorPublisher.listen { @Sendable [weak self] error in
         Task { @MainActor in
-          self?.inputsStatus = error == .permissionDenied ? "refusé (Developer Center)" : error.description
+          self?.inputsStatus = error == .permissionDenied ? String(localized: "refusé (Developer Center)") : error.description
           self?.log.error("[P2] inputs erreur : \(error.description, privacy: .public)")
         }
       }.store(in: inputTokens)
@@ -312,7 +312,7 @@ final class WearablesModel {
       }
       log.notice("[P2] inputs attachés")
     } catch {
-      inputsStatus = "erreur : \(error.localizedDescription)"
+      inputsStatus = String(localized: "erreur : \(error.localizedDescription)")
       log.error("[P2] addInputs : \(error.localizedDescription, privacy: .public)")
     }
   }
@@ -338,7 +338,7 @@ final class WearablesModel {
     do {
       setCameraPermission(try await wearables.checkPermissionStatus(.camera))
     } catch {
-      cameraPermission = "erreur"
+      cameraPermission = String(localized: "erreur")
     }
   }
 
@@ -369,7 +369,7 @@ final class WearablesModel {
 
   private func setCameraPermission(_ status: PermissionStatus) {
     isCameraGranted = status == .granted
-    cameraPermission = isCameraGranted ? "accordée" : "non accordée"
+    cameraPermission = isCameraGranted ? String(localized: "accordée") : String(localized: "non accordée")
   }
 
   // MARK: - État des lunettes
@@ -425,7 +425,7 @@ final class WearablesModel {
     }
     do {
       try voice?.start(deviceIdentifier: deviceId)
-      voiceStatus = "à l'écoute"
+      voiceStatus = String(localized: "à l'écoute")
     } catch {
       voiceStatus = error.localizedDescription
       log.error("[P2] voix start : \(error.localizedDescription, privacy: .public)")
@@ -447,7 +447,7 @@ final class WearablesModel {
   }
 
   private func read(_ device: Device) {
-    deviceName = device.name.isEmpty ? "Lunettes Meta" : device.name
+    deviceName = device.name.isEmpty ? String(localized: "Lunettes Meta") : device.name
     batteryLevel = device.batteryLevel.flatMap { $0 > 0 ? $0 : nil }
     thermal = String(describing: device.thermalLevel)
     switch device.thermalLevel {
