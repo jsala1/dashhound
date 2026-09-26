@@ -31,6 +31,14 @@ Task {
     let span = (last ?? 0) - (first ?? 0)
     print(String(format: "durée=%.2f s  codec=%@  %dx%d  frames=%d  fps moyen=%.1f  keyframes=%d  trous>150ms=%d  trou max=%.0f ms",
                  duration, codec, Int(size.width), Int(size.height), frames, span > 0 ? Double(frames - 1) / span : 0, keys, gaps, maxGap * 1000))
+    if let audio = try await asset.loadTracks(withMediaType: .audio).first {
+      let range = try await audio.load(.timeRange)
+      let afd = try await audio.load(.formatDescriptions).first
+      let asbd = afd.flatMap { CMAudioFormatDescriptionGetStreamBasicDescription($0)?.pointee }
+      print(String(format: "audio : début=%.2f s  durée=%.2f s  %.0f Hz  %d canal", range.start.seconds, range.duration.seconds, asbd?.mSampleRate ?? 0, asbd?.mChannelsPerFrame ?? 0))
+    } else {
+      print("audio : aucune piste")
+    }
   } catch { print("erreur: \(error)") }
 }
 sem.wait()
