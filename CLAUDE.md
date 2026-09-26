@@ -144,8 +144,10 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   **Mesuré 2026-09-26 (02:47)** : Inputs `active` avec l'App ID (pas de `permissionDenied`), mais
   **aucun événement remonté** : appui sur le bouton de capture comme tap du pavé tactile mettent la
   session en **pause** (reprise au geste suivant). → Contournement : **la pause des lunettes
-  déclenche la sauvegarde** (`TriggerSource.glassesPause`) ; second tap pour reprendre, rappel
-  affiché par la mascotte et la Live Activity (on ne filme plus pendant la pause).
+  déclenche la sauvegarde** (`TriggerSource.glassesPause`). **Règle Julian : la dashcam ne s'arrête
+  que sur « Arrêter la dashcam ».** Donc reprise automatique : si pas de second tap sous 1,5 s, la
+  session en pause est fermée et une neuve rouverte 2 s après (plancher #231) ; mémoire remise à zéro
+  (le clip du tap est déjà sauvé). Trou à mesurer.
 
 ## Idées retenues (hors phase en cours)
 

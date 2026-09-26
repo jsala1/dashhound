@@ -69,6 +69,7 @@ final class WearablesModel {
   @ObservationIgnored private var inputs: Inputs?
   @ObservationIgnored private var inputsTask: Task<Void, Never>?
   @ObservationIgnored private let inputTokens = ListenerTokenBag()
+  @ObservationIgnored private var autoResumeTask: Task<Void, Never>?
   @ObservationIgnored private var voice: VoiceInvocationsStream?
   @ObservationIgnored private let voiceTokens = ListenerTokenBag()
   @ObservationIgnored private let log = Logger(subsystem: "com.julian.glassesdashcam", category: "Wearables")
@@ -147,6 +148,8 @@ final class WearablesModel {
 
   func stopSession() {
     wantsSession = false
+    autoResumeTask?.cancel()
+    autoResumeTask = nil
     reconnectTask?.cancel()
     session?.stop()
   }
@@ -156,6 +159,8 @@ final class WearablesModel {
     log.notice("session=\(state.description, privacy: .public)")
     switch state {
     case .started:
+      autoResumeTask?.cancel()
+      autoResumeTask = nil
       Task {
         await refreshCameraPermission()
         await refreshMicrophonePermission()
@@ -169,6 +174,7 @@ final class WearablesModel {
         log.notice("[P2] pause des lunettes → sauvegarde")
         Task { await recorder.save(trigger: .glassesPause) }
       }
+      scheduleAutoResume()
     case .stopped:
       detachInputs()
       // La session emporte la caméra (cascade parent → enfant) : le buffer est vide.
@@ -178,6 +184,21 @@ final class WearablesModel {
       scheduleReconnectIfNeeded()
     default:
       break
+    }
+  }
+
+  /// La dashcam ne s'arrête que sur « Arrêter la dashcam » (Julian, 2026-09-26). Une pause imposée
+  /// par les lunettes (tap sur la branche) ne se relance pas depuis l'app : si l'utilisateur n'a pas
+  /// retapé après 1,5 s, on ferme la session ; la reconnexion auto en rouvre une neuve 2 s plus tard
+  /// (plancher recommandé par Meta, issue #231).
+  private func scheduleAutoResume() {
+    guard wantsSession, autoResumeTask == nil else { return }
+    autoResumeTask = Task { [weak self] in
+      try? await Task.sleep(for: .seconds(1.5))
+      guard !Task.isCancelled, let self, self.wantsSession, self.sessionState == .paused else { return }
+      self.log.notice("[P2] reprise auto : la pause dure, on rouvre une session")
+      self.autoResumeTask = nil
+      self.session?.stop()
     }
   }
 

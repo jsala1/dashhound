@@ -73,7 +73,7 @@ enum DashhoundState: Equatable {
     case .watching: String(localized: "Je regarde.")
     case .ready(let seconds): String(localized: "\(seconds) s en mémoire.")
     case .saved: String(localized: "Sauvé !")
-    case .pausedByGlasses: String(localized: "Sauvé. Tape la branche pour reprendre.")
+    case .pausedByGlasses: String(localized: "Sauvé. Je reprends dans un instant.")
     case .resting: String(localized: "Je m'étire.")
     case .disconnected: String(localized: "Hmm, je ne les vois plus.")
     case .tired(_, let isHot): isHot ? String(localized: "J'ai chaud.") : String(localized: "Je fatigue.")

@@ -51,16 +51,6 @@
         }
       }
     },
-    "En pause — tape la branche pour reprendre": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Paused — tap the temple to resume"
-          }
-        }
-      }
-    },
     "Je regarde · %lld / %lld s": {
       "localizations": {
         "en": {
@@ -103,6 +93,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save the last 45 s"
+          }
+        }
+      }
+    },
+    "Sauvé — reprise automatique…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved — resuming automatically…"
           }
         }
       }

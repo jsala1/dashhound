@@ -593,12 +593,12 @@
         }
       }
     },
-    "Sauvé. Tape la branche pour reprendre.": {
+    "Sauvé. Je reprends dans un instant.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saved. Tap the temple to resume."
+            "value": "Saved. Resuming in a moment."
           }
         }
       }
