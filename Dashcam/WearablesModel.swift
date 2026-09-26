@@ -1,6 +1,7 @@
-// Rôle : registration Meta AI, DeviceSession (AutoDeviceSelector), permission `.camera`,
-// état des lunettes (batterie, thermique, port, lien) et reconnexion auto. Cf. CLAUDE.md.
-// P0 : pas encore de caméra attachée — la session est ouverte et observée, c'est tout.
+// Rôle : registration Meta AI, DeviceSession (AutoDeviceSelector), permissions `.camera` et
+// `.microphone`, stream caméra hvc1 (+ audio PCM si choisi) vers DashcamRecorder, état des lunettes
+// (batterie, thermique, port, lien) et reconnexion auto. Cf. CLAUDE.md.
+import MWDATCamera
 import MWDATCore
 import Observation
 import os
@@ -23,7 +24,16 @@ final class WearablesModel {
   private(set) var linkState = "—"
   private(set) var cameraPermission = "—"
   private(set) var isCameraGranted = false
+  private(set) var isMicrophoneGranted = false
+  private(set) var streamState: StreamState = .stopped
   var errorMessage: String?
+
+  let recorder: DashcamRecorder
+
+  /// L'audio du stream est choisi mais la permission micro des lunettes manque.
+  var needsMicrophonePermission: Bool {
+    recorder.audioSource == .stream && sessionState == .started && isCameraGranted && !isMicrophoneGranted
+  }
   /// L'utilisateur a demandé une session : on la relance si elle tombe (coupure BT, lunettes pliées).
   private(set) var wantsSession = false
 
@@ -48,9 +58,13 @@ final class WearablesModel {
   @ObservationIgnored private let deviceTokens = ListenerTokenBag()
   @ObservationIgnored private var tasks: [Task<Void, Never>] = []
   @ObservationIgnored private var reconnectTask: Task<Void, Never>?
+  @ObservationIgnored private var camera: MWDATCamera.Camera?
+  @ObservationIgnored private let streamTokens = ListenerTokenBag()
+  @ObservationIgnored private var restartStreamWhenStopped = false
   @ObservationIgnored private let log = Logger(subsystem: "com.julian.glassesdashcam", category: "Wearables")
 
-  init(wearables: WearablesInterface = Wearables.shared) {
+  init(recorder: DashcamRecorder, wearables: WearablesInterface = Wearables.shared) {
+    self.recorder = recorder
     self.wearables = wearables
     self.selector = AutoDeviceSelector(wearables: wearables)
     self.registrationState = wearables.registrationState
@@ -132,8 +146,14 @@ final class WearablesModel {
     log.notice("session=\(state.description, privacy: .public)")
     switch state {
     case .started:
-      Task { await refreshCameraPermission() }
+      Task {
+        await refreshCameraPermission()
+        await refreshMicrophonePermission()
+        startStreamIfReady()
+      }
     case .stopped:
+      // La session emporte la caméra (cascade parent → enfant) : le buffer est vide.
+      clearStream()
       sessionTokens.clear()
       session = nil
       scheduleReconnectIfNeeded()
@@ -156,7 +176,89 @@ final class WearablesModel {
     }
   }
 
-  // MARK: - Permission caméra
+  // MARK: - Stream caméra
+
+  /// Attache la caméra dès que la session est prête et la caméra autorisée : la dashcam tourne
+  /// tant que la session est ouverte. Audio du stream seulement si choisi et autorisé.
+  func startStreamIfReady() {
+    guard let session, sessionState == .started, isCameraGranted, camera == nil else { return }
+    let streamAudio = recorder.audioSource == .stream && isMicrophoneGranted
+    let config = StreamConfiguration(
+      videoCodec: .hvc1,
+      audioCodec: streamAudio ? .pcm(sampleRate: .rate16000, numberOfChannels: 1) : nil,
+      resolution: recorder.resolution.sdk,
+      frameRate: 24)
+    do {
+      guard let newCamera = try session.addCamera(config: config) else {
+        errorMessage = "Caméra des lunettes indisponible, réessaie."
+        return
+      }
+      camera = newCamera
+      let stream = newCamera.stream
+      let recorder = recorder
+      let glassesName = deviceName
+      stream.statePublisher.listen { [weak self] state in
+        Task { @MainActor in self?.streamStateChanged(state, glassesName: glassesName, streamAudio: streamAudio) }
+      }.store(in: streamTokens)
+      stream.errorPublisher.listen { [weak self] error in
+        Task { @MainActor in
+          self?.log.error("stream error: \(error.localizedDescription, privacy: .public)")
+          self?.errorMessage = error.localizedDescription
+        }
+      }.store(in: streamTokens)
+      stream.videoFramePublisher.listen { frame in
+        recorder.ingestVideo(frame.sampleBuffer)
+      }.store(in: streamTokens)
+      if streamAudio {
+        stream.audioFramePublisher.listen { frame in
+          recorder.ingestStreamAudio(frame)
+        }.store(in: streamTokens)
+      }
+      streamState = .starting
+      log.notice("stream start — \(self.recorder.resolution.rawValue, privacy: .public), audio stream=\(streamAudio, privacy: .public)")
+      stream.start()
+    } catch {
+      camera = nil
+      errorMessage = error.localizedDescription
+    }
+  }
+
+  /// Relance le stream pour appliquer un réglage (audio, résolution) : le buffer repart de zéro.
+  func restartStream() {
+    guard let camera else {
+      startStreamIfReady()
+      return
+    }
+    restartStreamWhenStopped = true
+    camera.stop()
+  }
+
+  private func streamStateChanged(_ state: StreamState, glassesName: String?, streamAudio: Bool) {
+    streamState = state
+    log.notice("stream=\(String(describing: state), privacy: .public)")
+    switch state {
+    case .streaming:
+      recorder.streamDidStart(glassesName: glassesName, streamAudio: streamAudio)
+    case .stopped:
+      clearStream()
+      if restartStreamWhenStopped {
+        restartStreamWhenStopped = false
+        startStreamIfReady()
+      }
+    default:
+      break
+    }
+  }
+
+  private func clearStream() {
+    streamTokens.clear()
+    camera?.stop()
+    camera = nil
+    streamState = .stopped
+    recorder.streamDidStop()
+  }
+
+  // MARK: - Permissions
 
   func refreshCameraPermission() async {
     do {
@@ -170,6 +272,22 @@ final class WearablesModel {
   func requestCameraPermission() async {
     do {
       setCameraPermission(try await wearables.requestPermission(.camera))
+      await refreshMicrophonePermission()
+      startStreamIfReady()
+    } catch {
+      errorMessage = error.localizedDescription
+    }
+  }
+
+  func refreshMicrophonePermission() async {
+    isMicrophoneGranted = (try? await wearables.checkPermissionStatus(.microphone)) == .granted
+  }
+
+  /// Bascule vers Meta AI : n'appeler qu'après confirmation de l'utilisateur.
+  func requestMicrophonePermission() async {
+    do {
+      isMicrophoneGranted = try await wearables.requestPermission(.microphone) == .granted
+      if isMicrophoneGranted { restartStream() }
     } catch {
       errorMessage = error.localizedDescription
     }

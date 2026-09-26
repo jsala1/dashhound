@@ -13,6 +13,9 @@ enum Palette {
   static let led = Color("led")
   static let ok = Color("ok")
   static let warn = Color("warn")
+  /// Texte sur `hound` (bouton SAUVER), fixe dans les deux modes : le blanc n'y fait que 2,8:1
+  /// (clair) / 2,4:1 (sombre) ; ce brun y fait 6,2:1 / 7,8:1. Proposition en attente de Julian.
+  static let onHound = Color(red: 0x1E / 255, green: 0x1A / 255, blue: 0x17 / 255)
   /// Fond des illustrations, identique dans les deux modes : les poses ne sont pas détourées.
   static let mascotPaper = Color(red: 0xFA / 255, green: 0xF7 / 255, blue: 0xF2 / 255)
 }
@@ -97,8 +100,8 @@ enum DashhoundState: Equatable {
 }
 
 extension WearablesModel {
-  /// État de la mascotte déduit de l'état réel. Sans stream ni buffer (avant la P1), une session
-  /// ouverte s'affiche « au repos » : on n'affiche pas de secondes en mémoire qui n'existent pas.
+  /// État de la mascotte déduit de l'état réel. Session ouverte sans stream = « au repos » : on
+  /// n'affiche jamais de secondes en mémoire qui n'existent pas.
   var dashhoundState: DashhoundState {
     switch registrationState {
     case .unavailable: return .missingPermission
@@ -110,7 +113,13 @@ extension WearablesModel {
     if isThermalHot { return .tired(battery: batteryLevel, isHot: true) }
     if sessionState == .started, !isCameraGranted, cameraPermission != "—" { return .missingPermission }
     if !hasActiveDevice { return wantsSession ? .disconnected : .searching }
-    if sessionState == .starting { return .searching }
+    if recorder.justSaved { return .saved }
+    if recorder.isActive {
+      let target = Int(recorder.bufferSeconds)
+      return recorder.availableSeconds >= target
+        ? .ready(seconds: target) : .watching(seconds: recorder.availableSeconds, target: target)
+    }
+    if sessionState == .starting || streamState == .starting || streamState == .waitingForDevice { return .searching }
     return .resting
   }
 }

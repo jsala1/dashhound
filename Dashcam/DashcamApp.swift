@@ -14,7 +14,7 @@ struct DashcamApp: App {
       assertionFailure("Configuration du SDK Wearables impossible : \(error)")
     }
     // Après configure() : le modèle lit Wearables.shared dès son init.
-    _model = State(wrappedValue: WearablesModel())
+    _model = State(wrappedValue: WearablesModel(recorder: DashcamRecorder()))
   }
 
   var body: some Scene {
