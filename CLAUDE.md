@@ -122,8 +122,10 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
 - 🎵 **Cohabitation audio** (question Julian 2026-09-26, non testé) — bug SDK ouvert #256 : le
   démarrage du stream caméra met la musique (A2DP) en pause sans reprise auto. Le micro HFP met les
   lunettes en mode appel (musique/GPS en qualité téléphone). Les appels passent en priorité et
-  interrompent notre audio. **Intégré au test A/B P1** : Spotify en lecture + guidage Plans + appel
-  entrant pendant les 2 min verrouillé ; noter ce qui coupe, reprend, et finit dans le clip.
+  interrompent notre audio. **Test de cohabitation (source audio stream)** — 2026-09-26 : la
+  musique **s'arrête** au démarrage de la dashcam (cause à départager : #256 vs keep-alive, qui est
+  pourtant en `.mixWithOthers` → relancer la musique après le démarrage + logger les interruptions
+  AVAudioSession). **Restent à tester** : guidage Plans, appel entrant (clip = vidéo + silence).
 - ⚖️ **Appels et enregistrement** — enregistrer une conversation sans consentement est un délit
   (art. 226-1 Code pénal). **Décision Julian 2026-09-26 : son du clip coupé pendant un appel**
   (vidéo seule, mention dans le clip) — détection via l'interruption audio / CallKit
