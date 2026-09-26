@@ -1,5 +1,5 @@
-// Écran unique (docs/UI_Dashhound.md) : mascotte + chiffre, jauge « 45 s en mémoire », bouton
-// SAUVER, dernier clip ; détails lunettes/session en dessous ; réglages derrière l'engrenage.
+// Écran unique (docs/UI_Dashhound.md) : mascotte + chiffre, jauge « 45 s en mémoire », action
+// principale selon l'état (connecter → démarrer → sauver), dernier clip ; détails lunettes/session en dessous ; réglages derrière l'engrenage.
 import SwiftUI
 
 struct ContentView: View {
@@ -25,7 +25,7 @@ struct ContentView: View {
                 .accessibilityLabel("Mémoire")
                 .accessibilityValue("\(recorder.availableSeconds) secondes sur \(Int(recorder.bufferSeconds))")
             }
-            saveButton
+            primaryButton
           }
           .padding(.vertical, 8)
         }
@@ -36,18 +36,6 @@ struct ContentView: View {
         }
 
         Section("Dashcam") {
-          if model.wantsSession {
-            Button("Arrêter la dashcam", role: .destructive) { model.stopSession() }
-          } else {
-            Button("Démarrer la dashcam") { model.startSession() }
-              .disabled(!model.isRegistered || !model.hasActiveDevice)
-          }
-          if !model.isRegistered {
-            Button("Connecter mes lunettes") { model.register() }
-          }
-          if model.sessionState == .started, !model.isCameraGranted {
-            Button("Autoriser la caméra…") { confirmCameraRedirect = true }
-          }
           if model.needsMicrophonePermission {
             Button("Autoriser le micro des lunettes…") { confirmMicrophoneRedirect = true }
           }
@@ -65,6 +53,7 @@ struct ContentView: View {
       }
       .scrollContentBackground(.hidden)
       .background(Palette.bg)
+      .safeAreaInset(edge: .bottom) { dashcamBar }
       .navigationTitle("Dashhound")
       .toolbar {
         Button { showSettings = true } label: { Image(systemName: "gearshape") }
@@ -94,26 +83,87 @@ struct ContentView: View {
     }
   }
 
-  private var saveButton: some View {
-    Button {
-      UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-      Task { await recorder.save(trigger: .manual) }
-    } label: {
-      Group {
-        if recorder.isSaving {
-          ProgressView().tint(Palette.onHound)
-        } else {
-          Text("Sauver les \(Int(recorder.bufferSeconds)) s")
-        }
+  /// Action principale selon l'état : une seule, toujours lisible. Quand rien n'est possible, le
+  /// bouton dit pourquoi (fond `houndSoft`, texte `ink`) au lieu d'un orange délavé.
+  private enum PrimaryAction {
+    case connect, allowCamera, save(Int)
+    case waiting(String)
+  }
+
+  private var primaryAction: PrimaryAction {
+    if !model.isRegistered { return .connect }
+    if model.sessionState == .started, !model.isCameraGranted { return .allowCamera }
+    if !model.wantsSession {
+      return .waiting(model.hasActiveDevice ? "Dashcam à l'arrêt" : "Je cherche tes lunettes…")
+    }
+    guard recorder.isActive else {
+      return model.hasActiveDevice ? .waiting("Démarrage…") : .waiting("Lunettes introuvables")
+    }
+    if recorder.isSaving { return .waiting("Sauvegarde…") }
+    return recorder.availableSeconds > 0 ? .save(recorder.availableSeconds) : .waiting("Je remplis la mémoire…")
+  }
+
+  @ViewBuilder private var primaryButton: some View {
+    switch primaryAction {
+    case .connect:
+      primaryStyle("Connecter mes lunettes") { model.register() }
+    case .allowCamera:
+      primaryStyle("Autoriser la caméra…") { confirmCameraRedirect = true }
+    case .save(let seconds):
+      primaryStyle("Sauver les \(min(seconds, Int(recorder.bufferSeconds))) s") {
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        Task { await recorder.save(trigger: .manual) }
       }
-      .font(.title2.bold())
-      .foregroundStyle(Palette.onHound)
-      .frame(maxWidth: .infinity, minHeight: 72)
-      .background(Palette.hound, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    case .waiting(let reason):
+      Text(reason)
+        .font(.title3.weight(.semibold))
+        .foregroundStyle(Palette.ink)
+        .frame(maxWidth: .infinity, minHeight: 72)
+        .background(Palette.houndSoft, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .accessibilityAddTraits(.updatesFrequently)
+    }
+  }
+
+  /// Barre fixe en bas : démarrer / arrêter la dashcam, toujours à portée de pouce.
+  private var dashcamBar: some View {
+    Group {
+      if model.wantsSession {
+        Button(role: .destructive) { model.stopSession() } label: {
+          Label("Arrêter la dashcam", systemImage: "stop.fill")
+            .font(.headline)
+            .foregroundStyle(Palette.warn)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Palette.warn, lineWidth: 1.5))
+        }
+      } else {
+        let ready = model.isRegistered && model.hasActiveDevice
+        Button { model.startSession() } label: {
+          Label("Démarrer la dashcam", systemImage: "record.circle")
+            .font(.headline)
+            .foregroundStyle(ready ? Palette.onHound : Palette.ink)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(ready ? Palette.hound : Palette.houndSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .disabled(!ready)
+      }
     }
     .buttonStyle(.plain)
-    .disabled(!recorder.isActive || recorder.availableSeconds == 0 || recorder.isSaving)
-    .opacity(recorder.isActive && recorder.availableSeconds > 0 ? 1 : 0.45)
+    .padding(.horizontal, 16)
+    .padding(.vertical, 10)
+    .background(.bar)
+  }
+
+  private func primaryStyle(_ title: String, action: @escaping () -> Void) -> some View {
+    Button(action: action) {
+      Text(title)
+        .font(.title2.bold())
+        .monospacedDigit()
+        .foregroundStyle(Palette.onHound)
+        .frame(maxWidth: .infinity, minHeight: 72)
+        .background(Palette.hound, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+    .buttonStyle(.plain)
   }
 
   private func lastClipRow(_ clip: SavedClip) -> some View {
