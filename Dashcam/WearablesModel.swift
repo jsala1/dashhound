@@ -29,6 +29,8 @@ final class WearablesModel {
   private(set) var streamState: StreamState = .stopped
   /// Bouton des lunettes (MWDATInputs, expérimental) — sonde P2 anticipée (décision Julian 2026-09-26).
   private(set) var inputsStatus = "—"
+  /// « Hey Meta, lance Dashhound » (Voice Invocations, expérimental, à activer au Developer Center).
+  private(set) var voiceStatus = "—"
   var errorMessage: String?
 
   let recorder: DashcamRecorder
@@ -67,6 +69,8 @@ final class WearablesModel {
   @ObservationIgnored private var inputs: Inputs?
   @ObservationIgnored private var inputsTask: Task<Void, Never>?
   @ObservationIgnored private let inputTokens = ListenerTokenBag()
+  @ObservationIgnored private var voice: VoiceInvocationsStream?
+  @ObservationIgnored private let voiceTokens = ListenerTokenBag()
   @ObservationIgnored private let log = Logger(subsystem: "com.julian.glassesdashcam", category: "Wearables")
 
   init(recorder: DashcamRecorder, wearables: WearablesInterface = Wearables.shared) {
@@ -374,6 +378,8 @@ final class WearablesModel {
     hasActiveDevice = deviceId != nil
     deviceTokens.clear()
     guard let deviceId, let device = wearables.deviceForIdentifier(deviceId) else {
+      voice?.stop()
+      voiceStatus = "—"
       deviceName = nil
       batteryLevel = nil
       thermal = "—"
@@ -390,7 +396,54 @@ final class WearablesModel {
       Task { @MainActor in self?.read(device) }
     }.store(in: deviceTokens)
     read(device)
+    startVoice(on: deviceId)
     scheduleReconnectIfNeeded()
+  }
+
+  // MARK: - « Hey Meta, lance Dashhound »
+
+  /// Écoute les invocations vocales des lunettes (pas besoin de session ouverte).
+  private func startVoice(on deviceId: DeviceIdentifier) {
+    if voice == nil {
+      do {
+        let stream = try VoiceInvocationsStream(wearables: wearables)
+        stream.invocationsPublisher.listen { @Sendable [weak self] invocation in
+          guard let launch = invocation as? LaunchApp else { return }
+          Task { @MainActor in await self?.handleVoice(launch) }
+        }.store(in: voiceTokens)
+        stream.errorPublisher.listen { @Sendable [weak self] error in
+          Task { @MainActor in
+            self?.voiceStatus = error.description
+            self?.log.error("[P2] voix : \(error.description, privacy: .public)")
+          }
+        }.store(in: voiceTokens)
+        voice = stream
+      } catch {
+        voiceStatus = error.localizedDescription
+        return
+      }
+    }
+    do {
+      try voice?.start(deviceIdentifier: deviceId)
+      voiceStatus = "à l'écoute"
+    } catch {
+      voiceStatus = error.localizedDescription
+      log.error("[P2] voix start : \(error.localizedDescription, privacy: .public)")
+    }
+  }
+
+  /// Dashcam active → sauve les 45 s ; arrêtée → la démarre. Toujours acquitter une seule fois.
+  private func handleVoice(_ launch: LaunchApp) async {
+    log.notice("[P2] « Hey Meta, lance Dashhound » — dashcam active=\(self.recorder.isActive, privacy: .public)")
+    if recorder.isActive {
+      let saved = await recorder.save(trigger: .voice)
+      _ = saved
+        ? await launch.responseHandle.sendSuccess(actionOutput: String(localized: "Clip sauvé"))
+        : await launch.responseHandle.sendFailure(actionOutput: String(localized: "Rien à sauver"))
+    } else {
+      startSession()
+      _ = await launch.responseHandle.sendSuccess(actionOutput: String(localized: "Dashcam démarrée"))
+    }
   }
 
   private func read(_ device: Device) {

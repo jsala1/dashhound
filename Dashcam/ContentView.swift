@@ -48,6 +48,7 @@ struct ContentView: View {
           row("Session", model.sessionState.description)
           row("Stream", String(describing: model.streamState))
           row("Bouton des lunettes", model.inputsStatus)
+          row("« Hey Meta »", model.voiceStatus)
           row("Meta AI", model.registrationLabel)
         }
       }

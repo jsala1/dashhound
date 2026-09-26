@@ -183,12 +183,14 @@ final class DashcamRecorder {
 
   // MARK: - Sauvegarde
 
-  func save(trigger: TriggerSource) async {
-    guard !isSaving else { return }
+  /// Renvoie `true` si un clip a été écrit.
+  @discardableResult
+  func save(trigger: TriggerSource) async -> Bool {
+    guard !isSaving else { return false }
     let now = CACurrentMediaTime()
     guard let snapshot = ring.snapshot(seconds: bufferSeconds, now: now) else {
       errorMessage = "Rien en mémoire à sauver pour l'instant."
-      return
+      return false
     }
     isSaving = true
     updateLiveActivity()
@@ -218,9 +220,11 @@ final class DashcamRecorder {
         guard !Task.isCancelled else { return }
         self?.justSaved = false
       }
+      return true
     } catch {
       errorMessage = error.localizedDescription
       log.error("[P1] échec du clip : \(error.localizedDescription, privacy: .public)")
+      return false
     }
   }
 }
