@@ -125,7 +125,12 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   interrompent notre audio. **Test de cohabitation (source audio stream)** — 2026-09-26 : la
   musique **s'arrête** au démarrage de la dashcam (cause à départager : #256 vs keep-alive, qui est
   pourtant en `.mixWithOthers` → relancer la musique après le démarrage + logger les interruptions
-  AVAudioSession). **Restent à tester** : guidage Plans, appel entrant (clip = vidéo + silence).
+  AVAudioSession). **Mesuré 2026-09-27** : musique lancée puis dashcam démarrée → la musique
+  s'arrête ~2 s après, au démarrage du stream ; relancée, elle « joue » mais reste muette dans les
+  lunettes. **Aucune interruption ni changement de route reçus par l'app** → ce sont les lunettes
+  (bug SDK #256, ouvert), pas notre keep-alive. Limite documentée : pas de musique dans les lunettes
+  pendant la dashcam. À confirmer : sortie audio sur l'iPhone. **Restent à tester** : guidage Plans,
+  appel entrant (clip = vidéo + silence).
 - ⚖️ **Appels et enregistrement** — enregistrer une conversation sans consentement est un délit
   (art. 226-1 Code pénal). **Décision Julian 2026-09-26 : son du clip coupé pendant un appel**
   (vidéo seule, mention dans le clip) — détection via l'interruption audio / CallKit
