@@ -117,7 +117,7 @@ extension WearablesModel {
     if isThermalHot { return .tired(battery: batteryLevel, isHot: true) }
     if sessionState == .started, !isCameraGranted, cameraPermission != "—" { return .missingPermission }
     if !hasActiveDevice { return wantsSession ? .disconnected : .searching }
-    if streamState == .paused || sessionState == .paused { return .pausedByGlasses }
+    if recorder.isPausedByGlasses || streamState == .paused || sessionState == .paused { return .pausedByGlasses }
     if recorder.justSaved { return .saved }
     if recorder.isActive {
       let target = Int(recorder.bufferSeconds)

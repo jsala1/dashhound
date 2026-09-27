@@ -151,7 +151,12 @@ final class WearablesModel {
     autoResumeTask?.cancel()
     autoResumeTask = nil
     reconnectTask?.cancel()
-    session?.stop()
+    if let session {
+      session.stop()  // → .stopped → clearStream() → arrêt complet (wantsSession = false)
+    } else {
+      // Arrêt pendant une reprise (pas de session ouverte) : couper keep-alive et Live Activity ici.
+      recorder.streamDidStop(dashcamStillWanted: false)
+    }
   }
 
   private func sessionStateChanged(_ state: DeviceSessionState) {
@@ -278,7 +283,8 @@ final class WearablesModel {
 
   private func streamStateChanged(_ state: StreamState, glassesName: String?, streamAudio: Bool) {
     streamState = state
-    recorder.isPausedByGlasses = state == .paused
+    if state == .paused { recorder.isPausedByGlasses = true }
+    if state == .streaming { recorder.isPausedByGlasses = false }
     log.notice("stream=\(String(describing: state), privacy: .public)")
     switch state {
     case .paused:
@@ -302,7 +308,7 @@ final class WearablesModel {
     camera?.stop()
     camera = nil
     streamState = .stopped
-    recorder.streamDidStop()
+    recorder.streamDidStop(dashcamStillWanted: wantsSession)
   }
 
   // MARK: - Bouton des lunettes (MWDATInputs)

@@ -90,7 +90,15 @@ final class DashcamRecorder {
     resolution = UserDefaults.standard.string(forKey: "resolution").flatMap(VideoResolution.init) ?? .low
     ring = RingBuffer(bufferSeconds: 45)
     Self.current = self
+    // Live Activity refusée ou retirée en arrière-plan : on la recrée au retour au premier plan.
+    foregroundObserver = NotificationCenter.default.addObserver(
+      forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main
+    ) { [weak self] _ in
+      MainActor.assumeIsolated { self?.liveActivity.retryIfNeeded() }
+    }
   }
+
+  @ObservationIgnored private var foregroundObserver: NSObjectProtocol?
 
   // MARK: - Cycle de vie du stream (appelé par WearablesModel)
 
@@ -126,18 +134,29 @@ final class DashcamRecorder {
     }
   }
 
-  func streamDidStop() {
-    guard isActive else { return }
-    isActive = false
-    uiTask?.cancel()
-    uiTask = nil
-    hfp.stop()
-    keepAlive.stop()
-    liveActivity.end()
-    ring.clear()
-    availableSeconds = 0
-    telemetry.stop()
-    log.notice("[P1] dashcam arrêtée — buffer vidé")
+  /// `dashcamStillWanted` : coupure temporaire (reprise après un tap, perte Bluetooth) — on garde le
+  /// keep-alive (sans lui iOS gèle l'app avant qu'elle puisse relancer la session, écran verrouillé)
+  /// et la Live Activity (iOS refuse d'en recréer une en arrière-plan). Sinon, arrêt complet.
+  func streamDidStop(dashcamStillWanted: Bool) {
+    if isActive {
+      isActive = false
+      uiTask?.cancel()
+      uiTask = nil
+      hfp.stop()
+      ring.clear()
+      availableSeconds = 0
+      telemetry.stop()
+      log.notice("[P1] stream arrêté — buffer vidé")
+    }
+    if dashcamStillWanted {
+      isPausedByGlasses = true
+      log.notice("[P1] reprise attendue — keep-alive et Live Activity conservés")
+    } else {
+      isPausedByGlasses = false
+      keepAlive.stop()
+      liveActivity.end()
+      log.notice("[P1] dashcam arrêtée")
+    }
   }
 
   private func refresh() {
