@@ -55,7 +55,7 @@ struct ContentView: View {
       .scrollContentBackground(.hidden)
       .background(Palette.bg)
       .safeAreaInset(edge: .bottom) { dashcamBar }
-      .navigationTitle("Dashhound")
+      .navigationTitle("Dashhound · Rewind")
       .toolbar {
         Button { showSettings = true } label: { Image(systemName: "gearshape") }
           .accessibilityLabel("Réglages")
