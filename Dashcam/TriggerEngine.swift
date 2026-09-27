@@ -9,6 +9,9 @@ enum TriggerSource: String, Sendable {
   /// Tap sur la branche : les lunettes mettent la session en pause sans transmettre l'événement
   /// (mesuré 2026-09-26) — la pause elle-même sert de déclencheur ; reprise automatique ensuite.
   case glassesPause = "tap sur la branche (pause des lunettes)"
+  /// Double tap sur le pavé tactile : remonté comme `.select(source: .captouch)` SANS pause du stream
+  /// (mesuré 2026-09-27) — le déclencheur mains libres sans coupure.
+  case glassesDoubleTap = "double tap sur la branche"
   case voice = "Hey Meta, lance Dashhound"
   case impact = "choc"
   case phoneImpact = "choc (téléphone)"

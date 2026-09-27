@@ -4,6 +4,7 @@
 import MWDATCamera
 import MWDATCore
 import MWDATInputs
+import UIKit
 import Observation
 import os
 
@@ -359,8 +360,15 @@ final class WearablesModel {
 
   private func handleInput(_ event: InputEvent) {
     log.notice("[P2] ÉVÉNEMENT \(String(describing: event), privacy: .public) — stream=\(String(describing: self.streamState), privacy: .public)")
-    if case .capture(.shortPress, _, _) = event {
+    switch event {
+    case .select(source: .captouch, _):
+      // Double tap sur la branche : arrive sans mettre le stream en pause → sauvegarde sans coupure.
+      UINotificationFeedbackGenerator().notificationOccurred(.success)
+      Task { await recorder.save(trigger: .glassesDoubleTap) }
+    case .capture(.shortPress, _, _):
       Task { await recorder.save(trigger: .captureButton) }
+    default:
+      break
     }
   }
 

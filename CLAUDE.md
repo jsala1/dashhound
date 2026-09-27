@@ -148,6 +148,9 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   que sur « Arrêter la dashcam ».** Donc reprise automatique : clip sauvé puis, sans attendre, la
   session en pause est fermée et une neuve rouverte 2 s après (plancher #231) ; mémoire remise à zéro
   (le clip du tap est déjà sauvé). Trou à mesurer.
+  **Mesuré 2026-09-27** : tap simple + reprise auto = **~4,3 s** de coupure. **Double tap sur la
+  branche = `.select(source: .captouch)` remonté à l'app SANS pause du stream** → déclencheur de
+  sauvegarde sans coupure (`TriggerSource.glassesDoubleTap`). C'est le geste recommandé.
 
 ## Idées retenues (hors phase en cours)
 

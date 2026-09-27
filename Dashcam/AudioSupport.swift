@@ -16,6 +16,30 @@ private let log = Logger(subsystem: "com.julian.glassesdashcam", category: "Audi
 @MainActor
 final class AudioKeepAlive {
   private var engine: AVAudioEngine?
+  private var observers: [NSObjectProtocol] = []
+
+  init() {
+    // Diagnostic cohabitation (musique coupée pendant la dashcam) : interruptions et changements de
+    // route audio, pour départager notre session du stream caméra (bug SDK #256).
+    let center = NotificationCenter.default
+    observers.append(
+      center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: nil) { note in
+        let type = (note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt).flatMap(AVAudioSession.InterruptionType.init)
+        let reason = note.userInfo?[AVAudioSessionInterruptionReasonKey] as? UInt
+        log.notice("[AUDIO] interruption \(type == .began ? "début" : "fin", privacy: .public) raison=\(reason.map(String.init) ?? "-", privacy: .public)")
+      })
+    observers.append(
+      center.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: nil) { note in
+        let reason = note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
+        let outputs = AVAudioSession.sharedInstance().currentRoute.outputs.map { "\($0.portType.rawValue)[\($0.portName)]" }
+        log.notice("[AUDIO] route raison=\(reason.map(String.init) ?? "-", privacy: .public) sorties=\(outputs.joined(separator: ", "), privacy: .public) autreAudio=\(AVAudioSession.sharedInstance().isOtherAudioPlaying, privacy: .public)")
+      })
+    observers.append(
+      center.addObserver(forName: AVAudioSession.silenceSecondaryAudioHintNotification, object: nil, queue: nil) { note in
+        let type = note.userInfo?[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? UInt
+        log.notice("[AUDIO] autre app audio \(type == 1 ? "démarre" : "s'arrête", privacy: .public)")
+      })
+  }
 
   var isRunning: Bool { engine?.isRunning ?? false }
 
