@@ -403,6 +403,16 @@
         }
       }
     },
+    "La caméra des lunettes est déjà utilisée (un enregistrement lancé depuis les lunettes ?). Arrête-le, puis redémarre la dashcam.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The glasses camera is already in use (a recording started from the glasses?). Stop it, then restart the dashcam."
+          }
+        }
+      }
+    },
     "Le buffer est vide.": {
       "localizations": {
         "en": {

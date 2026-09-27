@@ -132,7 +132,7 @@ struct ContentView: View {
         }
       } else {
         let ready = model.isRegistered && model.hasActiveDevice
-        Button { model.startSession() } label: {
+        Button { model.userStartSession() } label: {
           Label("Démarrer la dashcam", systemImage: "record.circle")
             .font(.headline)
             .foregroundStyle(ready ? Palette.onHound : Palette.ink)

@@ -299,6 +299,7 @@ private final class Telemetry: @unchecked Sendable {
   private var audioSamples = 0
   private var audioSeen = 0
   private var audioFormat = ""
+  private var audioPeak: Float = 0
   private var heartbeat: DispatchSourceTimer?
   private var lastTick: TimeInterval = 0
 
@@ -378,22 +379,42 @@ private final class Telemetry: @unchecked Sendable {
       if elapsed >= 5 {
         let counts = ring.counts
         line = String(
-          format: "[P1] +%.0fs fps=%.1f keyframes=%d maxGap=%.0fms audio=%.0f éch/s | mémoire=%.0f s (%d vidéo, %d audio) | RAM=%.0f Mo",
+          format: "[P1] +%.0fs fps=%.1f keyframes=%d maxGap=%.0fms audio=%.0f éch/s crête=%.0f dBFS | mémoire=%.0f s (%d vidéo, %d audio) | RAM=%.0f Mo",
           now - startedAt, Double(frames) / elapsed, keyframes, maxGap, Double(audioSamples) / elapsed,
+          audioPeak > 0 ? 20 * log10(Double(audioPeak)) : -120,
           ring.availableSeconds(now: now), counts.video, counts.audio, Self.footprintMB())
         windowStart = now
         frames = 0
         keyframes = 0
         maxGap = 0
         audioSamples = 0
+        audioPeak = 0
       }
     }
     if let first { log.notice("\(first, privacy: .public)") }
     if let line { log.notice("\(line, privacy: .public)") }
   }
 
+  /// Crête du signal (0…1) : dit si le micro capte encore quelque chose (Plans, appel…).
+  private static func peak(_ buffer: AVAudioPCMBuffer) -> Float {
+    let n = Int(buffer.frameLength)
+    if let data = buffer.floatChannelData?[0] {
+      var m: Float = 0
+      for i in 0..<n { m = max(m, abs(data[i])) }
+      return m
+    }
+    if let data = buffer.int16ChannelData?[0] {
+      var m: Int32 = 0
+      for i in 0..<n { m = max(m, abs(Int32(data[i]))) }
+      return Float(m) / Float(Int16.max)
+    }
+    return -1
+  }
+
   func audio(_ buffer: AVAudioPCMBuffer, now: TimeInterval) {
+    let level = Self.peak(buffer)
     let isFirst = lock.withLock { () -> Bool in
+      audioPeak = max(audioPeak, level)
       audioSamples += Int(buffer.frameLength)
       audioSeen += Int(buffer.frameLength)
       guard audioFormat.isEmpty else { return false }

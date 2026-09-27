@@ -32,7 +32,27 @@ final class WearablesModel {
   private(set) var inputsStatus = "—"
   /// « Hey Meta, lance Dashhound » (Voice Invocations, expérimental, à activer au Developer Center).
   private(set) var voiceStatus = "—"
-  var errorMessage: String?
+  /// Dernière erreur à afficher. Une même erreur n'est pas ré-affichée pendant 30 s : une alerte qui
+  /// revient en boucle masque « Arrêter la dashcam » (bug 2026-09-27, caméra déjà utilisée).
+  var errorMessage: String? {
+    get { shownError }
+    set {
+      guard let newValue else {
+        shownError = nil
+        return
+      }
+      let now = Date()
+      if newValue == lastErrorText, let at = lastErrorAt, now.timeIntervalSince(at) < 30 { return }
+      lastErrorText = newValue
+      lastErrorAt = now
+      shownError = newValue
+    }
+  }
+  private var shownError: String?
+  @ObservationIgnored private var lastErrorText: String?
+  @ObservationIgnored private var lastErrorAt: Date?
+  /// Reprises / reconnexions automatiques récentes (garde-fou anti-boucle).
+  @ObservationIgnored private var recoveryAttempts: [Date] = []
 
   let recorder: DashcamRecorder
 
@@ -121,6 +141,12 @@ final class WearablesModel {
 
   // MARK: - Session
 
+  /// Démarrage demandé par l'utilisateur (bouton, voix) : compteur de reprises remis à zéro.
+  func userStartSession() {
+    recoveryAttempts.removeAll()
+    startSession()
+  }
+
   func startSession() {
     wantsSession = true
     guard session == nil else { return }
@@ -205,9 +231,27 @@ final class WearablesModel {
       guard !Task.isCancelled, self.wantsSession,
         self.sessionState == .paused || self.streamState == .paused
       else { return }
+      guard self.allowRecoveryAttempt() else { return }
       self.log.notice("[P2] reprise auto : on ferme la session en pause pour en rouvrir une")
       self.session?.stop()
     }
+  }
+
+  /// Au-delà de 3 reprises/reconnexions en 60 s, quelque chose occupe la caméra (typiquement un
+  /// enregistrement lancé depuis les lunettes) : on arrête proprement au lieu de boucler.
+  private func allowRecoveryAttempt() -> Bool {
+    let now = Date()
+    recoveryAttempts = recoveryAttempts.filter { now.timeIntervalSince($0) < 60 }
+    guard recoveryAttempts.count < 3 else {
+      log.error("[P1] trop de reprises en 60 s — caméra des lunettes probablement occupée, arrêt")
+      recoveryAttempts.removeAll()
+      stopSession()
+      errorMessage = String(
+        localized: "La caméra des lunettes est déjà utilisée (un enregistrement lancé depuis les lunettes ?). Arrête-le, puis redémarre la dashcam.")
+      return false
+    }
+    recoveryAttempts.append(now)
+    return true
   }
 
   /// Reconnexion auto : seulement si l'utilisateur voulait une session et qu'un device est actif.
@@ -219,6 +263,7 @@ final class WearablesModel {
       try? await Task.sleep(for: .seconds(2))
       guard !Task.isCancelled, let self, self.wantsSession, self.session == nil, self.hasActiveDevice
       else { return }
+      guard self.allowRecoveryAttempt() else { return }
       self.log.notice("reconnexion auto")
       self.startSession()
     }
@@ -481,7 +526,7 @@ final class WearablesModel {
         ? await launch.responseHandle.sendSuccess(actionOutput: String(localized: "Clip sauvé"))
         : await launch.responseHandle.sendFailure(actionOutput: String(localized: "Rien à sauver"))
     } else {
-      startSession()
+      userStartSession()
       _ = await launch.responseHandle.sendSuccess(actionOutput: String(localized: "Dashcam démarrée"))
     }
   }
