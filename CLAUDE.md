@@ -156,6 +156,9 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   **Mesuré 2026-09-27** : tap simple + reprise auto = **~4,3 s** de coupure. **Double tap sur la
   branche = `.select(source: .captouch)` remonté à l'app SANS pause du stream** → déclencheur de
   sauvegarde sans coupure (`TriggerSource.glassesDoubleTap`). C'est le geste recommandé.
+  Demande à Meta (tap simple / bouton sans pause + #256) : **facebook/meta-wearables-dat-ios#312**,
+  publiée depuis le compte perso `jsala1` (2026-09-27). Toute publication GitHub du projet part de
+  `jsala1`, jamais de `[compte pro]`.
 
 ## Idées retenues (hors phase en cours)
 
