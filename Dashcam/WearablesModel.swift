@@ -53,6 +53,25 @@ final class WearablesModel {
   @ObservationIgnored private var lastErrorAt: Date?
   /// Reprises / reconnexions automatiques récentes (garde-fou anti-boucle).
   @ObservationIgnored private var recoveryAttempts: [Date] = []
+  @ObservationIgnored private var pendingErrorTask: Task<Void, Never>?
+
+  /// Erreur survenue pendant que la dashcam démarre ou reprend : souvent transitoire (une reprise la
+  /// règle, ou le garde-fou affichera un diagnostic plus clair). Loggée tout de suite, affichée
+  /// seulement si la dashcam ne tourne toujours pas 8 s plus tard — plus d'alertes en cascade.
+  private func reportTransient(_ message: String) {
+    log.error("[P1] erreur (différée) : \(message, privacy: .public)")
+    guard wantsSession else {
+      errorMessage = message
+      return
+    }
+    pendingErrorTask?.cancel()
+    pendingErrorTask = Task { [weak self] in
+      try? await Task.sleep(for: .seconds(8))
+      guard !Task.isCancelled, let self, self.wantsSession, self.streamState != .streaming, self.errorMessage == nil
+      else { return }
+      self.errorMessage = message
+    }
+  }
 
   let recorder: DashcamRecorder
 
@@ -159,14 +178,18 @@ final class WearablesModel {
       }.store(in: sessionTokens)
       newSession.errorPublisher.listen { @Sendable [weak self] error in
         Task { @MainActor in
-          self?.log.error("session error: \(error.localizedDescription, privacy: .public)")
-          self?.errorMessage = error.localizedDescription
+          self?.reportTransient(error.localizedDescription)
         }
       }.store(in: sessionTokens)
       sessionState = .starting
       try newSession.start()
     } catch {
-      errorMessage = error.localizedDescription
+      // Pendant une reprise automatique : différée (pas d'alerte en cascade) ; sinon immédiate.
+      if recoveryAttempts.isEmpty {
+        errorMessage = error.localizedDescription
+      } else {
+        reportTransient(error.localizedDescription)
+      }
       sessionTokens.clear()
       session = nil
       sessionState = .idle
@@ -245,6 +268,7 @@ final class WearablesModel {
     guard recoveryAttempts.count < 3 else {
       log.error("[P1] trop de reprises en 60 s — caméra des lunettes probablement occupée, arrêt")
       recoveryAttempts.removeAll()
+      pendingErrorTask?.cancel()
       stopSession()
       errorMessage = String(
         localized: "La caméra des lunettes est déjà utilisée (un enregistrement lancé depuis les lunettes ?). Arrête-le, puis redémarre la dashcam.")
@@ -283,7 +307,7 @@ final class WearablesModel {
       frameRate: recorder.frameRate.rawValue)
     do {
       guard let newCamera = try session.addCamera(config: config) else {
-        errorMessage = String(localized: "Caméra des lunettes indisponible, réessaie.")
+        reportTransient(String(localized: "Caméra des lunettes indisponible, réessaie."))
         return
       }
       camera = newCamera
@@ -296,8 +320,7 @@ final class WearablesModel {
       }.store(in: streamTokens)
       stream.errorPublisher.listen { @Sendable [weak self] error in
         Task { @MainActor in
-          self?.log.error("stream error: \(error.localizedDescription, privacy: .public)")
-          self?.errorMessage = error.localizedDescription
+          self?.reportTransient(error.localizedDescription)
         }
       }.store(in: streamTokens)
       stream.videoFramePublisher.listen { @Sendable frame in

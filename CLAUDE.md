@@ -132,8 +132,12 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   pendant la dashcam. **Confirmé 2026-09-27** : la musique passe sur un autre haut-parleur (Sonos) mais
   pas dans les lunettes ; coupée aussi à 15 et 7 fps, et sans aucun audio de stream à 24 fps (coupure
   0,01 s après le début du stream) → **la caméra des lunettes coupe la lecture, ni débit ni micro ni
-  app**. Limite Meta (#256, relayée dans #312). Réglage « Images par seconde » gardé pour mesure. **Restent à tester** : guidage Plans,
-  appel entrant (clip = vidéo + silence).
+  app**. Limite Meta (#256, relayée dans #312). Réglage « Images par seconde » gardé pour mesure. **Mesuré 2026-09-27 (18:40)** : pendant un
+  guidage Plans, le micro des lunettes capte (-16 à -37 dBFS) mais les instructions vocales ne
+  s'entendent pas dans les lunettes (même limite #256). Appel : détecté, **son du clip à -120 dBFS
+  dès la seconde de début d'appel** (vérifié dans le fichier, `scripts/audio_levels.swift`).
+  L'appel interrompt le keep-alive → relance ajoutée à la fin de l'interruption. **À tester :
+  appel écran verrouillé en poche** (iOS peut suspendre l'app pendant l'appel).
 - ⚖️ **Appels et enregistrement** — enregistrer une conversation sans consentement est un délit
   (art. 226-1 Code pénal). **Décision Julian 2026-09-26 : son du clip coupé pendant un appel**
   (vidéo seule, mention dans le clip) — détection via l'interruption audio / CallKit

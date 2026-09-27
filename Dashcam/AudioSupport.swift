@@ -17,6 +17,9 @@ private let log = Logger(subsystem: "com.julian.glassesdashcam", category: "Audi
 final class AudioKeepAlive {
   private var engine: AVAudioEngine?
   private var observers: [NSObjectProtocol] = []
+  /// La dashcam veut le keep-alive : à relancer après une interruption (appel), sinon iOS gèle l'app
+  /// écran verrouillé une fois l'appel terminé (vu 2026-09-27 : rien ne le relançait).
+  private var wanted = false
 
   init() {
     // Diagnostic cohabitation (musique coupée pendant la dashcam) : interruptions et changements de
@@ -27,6 +30,14 @@ final class AudioKeepAlive {
         let type = (note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt).flatMap(AVAudioSession.InterruptionType.init)
         let reason = note.userInfo?[AVAudioSessionInterruptionReasonKey] as? UInt
         log.notice("[AUDIO] interruption \(type == .began ? "début" : "fin", privacy: .public) raison=\(reason.map(String.init) ?? "-", privacy: .public)")
+        if type == .ended {
+          Task { @MainActor [weak self] in self?.resumeAfterInterruption() }
+        }
+      })
+    observers.append(
+      center.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification, object: nil, queue: nil) { _ in
+        log.error("[AUDIO] services média réinitialisés — relance du keep-alive")
+        Task { @MainActor [weak self] in self?.resumeAfterInterruption() }
       })
     observers.append(
       center.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: nil) { note in
@@ -43,7 +54,16 @@ final class AudioKeepAlive {
 
   var isRunning: Bool { engine?.isRunning ?? false }
 
+  private func resumeAfterInterruption() {
+    guard wanted, !isRunning else { return }
+    log.notice("keep-alive relancé après interruption")
+    engine?.stop()
+    engine = nil
+    start()
+  }
+
   func start() {
+    wanted = true
     if isRunning { return }
     engine?.stop()
     let session = AVAudioSession.sharedInstance()
@@ -80,6 +100,7 @@ final class AudioKeepAlive {
   }
 
   func stop() {
+    wanted = false
     engine?.stop()
     engine = nil
   }
