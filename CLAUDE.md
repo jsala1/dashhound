@@ -129,7 +129,10 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   s'arrête ~2 s après, au démarrage du stream ; relancée, elle « joue » mais reste muette dans les
   lunettes. **Aucune interruption ni changement de route reçus par l'app** → ce sont les lunettes
   (bug SDK #256, ouvert), pas notre keep-alive. Limite documentée : pas de musique dans les lunettes
-  pendant la dashcam. À confirmer : sortie audio sur l'iPhone. **Restent à tester** : guidage Plans,
+  pendant la dashcam. **Confirmé 2026-09-27** : la musique passe sur un autre haut-parleur (Sonos) mais
+  pas dans les lunettes ; coupée aussi à 15 et 7 fps, et sans aucun audio de stream à 24 fps (coupure
+  0,01 s après le début du stream) → **la caméra des lunettes coupe la lecture, ni débit ni micro ni
+  app**. Limite Meta (#256, relayée dans #312). Réglage « Images par seconde » gardé pour mesure. **Restent à tester** : guidage Plans,
   appel entrant (clip = vidéo + silence).
 - ⚖️ **Appels et enregistrement** — enregistrer une conversation sans consentement est un délit
   (art. 226-1 Code pénal). **Décision Julian 2026-09-26 : son du clip coupé pendant un appel**
