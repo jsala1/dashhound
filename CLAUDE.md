@@ -146,6 +146,14 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   sans floutage. Le post LinkedIn n'utilisera qu'un clip **sans tiers identifiable**.
 - 📷 **FOV** — le stream est plus étroit que les photos (retour dev GitHub #54). Acceptable.
 
+## Décisions UI
+
+- **2026-09-27 — boutons d'action orange (`hound`), texte brun `#1E1A17`** (6,2:1 clair / 7,8:1
+  sombre ; le blanc ne passait pas). Le bleu reste réservé à la LED (« ça filme ») : l'utiliser pour
+  les boutons brouillerait ce sens et évoquerait la marque Meta (interdit près de la mascotte).
+  Accessibilité daltoniens : contraste + libellé explicite sur chaque bouton, jamais la couleur seule.
+- Titre de l'écran « Dashhound · Rewind » ; nom sous l'icône « Dashhound » (iOS tronque au-delà).
+
 ## Dérogations au phasage
 
 - **2026-09-26 — sonde P2 « bouton des lunettes » avant la fin des tests P1** (décision Julian :

@@ -14,7 +14,8 @@ enum Palette {
   static let ok = Color("ok")
   static let warn = Color("warn")
   /// Texte sur `hound` (bouton SAUVER), fixe dans les deux modes : le blanc n'y fait que 2,8:1
-  /// (clair) / 2,4:1 (sombre) ; ce brun y fait 6,2:1 / 7,8:1. Proposition en attente de Julian.
+  /// (clair) / 2,4:1 (sombre) ; ce brun y fait 6,2:1 / 7,8:1. Validé par Julian le 2026-09-27
+  /// (boutons orange conservés : le bleu est la LED « ça filme » et évoquerait la marque Meta).
   static let onHound = Color(red: 0x1E / 255, green: 0x1A / 255, blue: 0x17 / 255)
   /// Fond des illustrations, identique dans les deux modes : les poses ne sont pas détourées.
   static let mascotPaper = Color(red: 0xFA / 255, green: 0xF7 / 255, blue: 0xF2 / 255)
