@@ -412,6 +412,10 @@ final class WearablesModel {
       Task { await recorder.save(trigger: .glassesDoubleTap) }
     case .capture(.shortPress, _, _):
       Task { await recorder.save(trigger: .captureButton) }
+    case .capture(.hold, _, _):
+      // Appui long = les lunettes vont filmer elles-mêmes et prendre la caméra (mesuré 2026-09-27) :
+      // l'événement arrive encore stream actif → on sauve les 45 s avant de perdre la mémoire.
+      Task { await recorder.save(trigger: .captureButton) }
     default:
       break
     }

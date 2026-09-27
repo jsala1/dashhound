@@ -162,6 +162,9 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   Demande à Meta (tap simple / bouton sans pause + #256) : **facebook/meta-wearables-dat-ios#312**,
   publiée depuis le compte perso `jsala1` (2026-09-27). Toute publication GitHub du projet part de
   `jsala1`, jamais de `[compte pro]`.
+  **Mesuré 2026-09-27 (18:33)** : l'**appui long** sur le bouton de capture remonte `capture(.hold)`
+  stream encore actif, puis les lunettes prennent la caméra (enregistrement natif) → Dashhound sauve
+  les 45 s sur `.hold`, puis le garde-fou (3 reprises / 60 s) l'arrête proprement avec un message.
 
 ## Idées retenues (hors phase en cours)
 

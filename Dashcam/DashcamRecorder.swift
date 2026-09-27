@@ -378,11 +378,11 @@ private final class Telemetry: @unchecked Sendable {
       let elapsed = now - windowStart
       if elapsed >= 5 {
         let counts = ring.counts
+        let peakDB: Double = audioPeak > 0 ? 20 * log10(Double(audioPeak)) : -120
         line = String(
-          format: "[P1] +%.0fs fps=%.1f keyframes=%d maxGap=%.0fms audio=%.0f éch/s crête=%.0f dBFS | mémoire=%.0f s (%d vidéo, %d audio) | RAM=%.0f Mo",
+          format: "[P1] +%.0fs fps=%.1f keyframes=%ld maxGap=%.0fms audio=%.0f éch/s crête=%.0f dBFS | mémoire=%.0f s (%ld vidéo, %ld audio) | RAM=%.0f Mo",
           now - startedAt, Double(frames) / elapsed, keyframes, maxGap, Double(audioSamples) / elapsed,
-          audioPeak > 0 ? 20 * log10(Double(audioPeak)) : -120,
-          ring.availableSeconds(now: now), counts.video, counts.audio, Self.footprintMB())
+          peakDB, ring.availableSeconds(now: now), counts.video, counts.audio, Self.footprintMB())
         windowStart = now
         frames = 0
         keyframes = 0
