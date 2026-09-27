@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "fr",
   "strings": {
+    "%lld g": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld g"
+          }
+        }
+      }
+    },
     "%lld s en mémoire.": {
       "localizations": {
         "en": {
@@ -153,6 +163,26 @@
         }
       }
     },
+    "Choc (iPhone)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impact (iPhone)"
+          }
+        }
+      }
+    },
+    "Choc détecté ! Je sauve dans un instant.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impact detected! Saving in a moment."
+          }
+        }
+      }
+    },
     "Clip gardé dans l'app, mais pas dans Photos : %@": {
       "localizations": {
         "en": {
@@ -249,6 +279,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Start dashcam"
+          }
+        }
+      }
+    },
+    "Détection de choc": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impact detection"
           }
         }
       }
@@ -643,6 +683,16 @@
         }
       }
     },
+    "Seuil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Threshold"
+          }
+        }
+      }
+    },
     "Son": {
       "localizations": {
         "en": {
@@ -699,6 +749,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Thermal"
+          }
+        }
+      }
+    },
+    "Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. Seuil plus haut = moins de déclenchements intempestifs.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An impact saves automatically, 10 s later: about 35 s before and 10 s after. Higher threshold = fewer false triggers."
           }
         }
       }

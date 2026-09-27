@@ -59,6 +59,15 @@ final class DashcamRecorder {
   var frameRate: FrameRateSetting {
     didSet { UserDefaults.standard.set(Int(frameRate.rawValue), forKey: "frameRate") }
   }
+  /// Choc détecté par l'iPhone → sauvegarde automatique (P2 anticipée, décision Julian 2026-09-27).
+  var impactDetectionEnabled: Bool {
+    didSet { UserDefaults.standard.set(impactDetectionEnabled, forKey: "impactDetection") }
+  }
+  var impactThreshold: ImpactThreshold {
+    didSet { UserDefaults.standard.set(impactThreshold.rawValue, forKey: "impactThreshold") }
+  }
+  /// On attend ce délai après un choc avant de sauver : le clip contient aussi l'« après ».
+  let impactPostRoll: TimeInterval = 10
   let bufferSeconds: TimeInterval = 45
 
   // MARK: - État exposé à l'UI
@@ -69,6 +78,8 @@ final class DashcamRecorder {
   private(set) var justSaved = false
   private(set) var lastClip: SavedClip?
   private(set) var audioStatus = "—"
+  /// Choc détecté, sauvegarde imminente (affiché par la mascotte).
+  private(set) var impactPending = false
   private var awaitingStreamAudio = false
   /// Lunettes en pause (tap sur la branche), renseigné par WearablesModel.
   var isPausedByGlasses = false {
@@ -79,6 +90,7 @@ final class DashcamRecorder {
   // MARK: - Pipeline (thread-safe, alimenté hors main actor)
 
   nonisolated let ring: RingBuffer
+  nonisolated let impactDetector = PhoneImpactDetector()
   nonisolated let calls = CallMonitor()
   nonisolated private let telemetry = Telemetry()
   nonisolated private let clock = VideoClock()
@@ -100,6 +112,8 @@ final class DashcamRecorder {
     // risque de corrompre le passthrough.
     resolution = UserDefaults.standard.string(forKey: "resolution").flatMap(VideoResolution.init) ?? .low
     frameRate = FrameRateSetting(rawValue: UInt(UserDefaults.standard.integer(forKey: "frameRate"))) ?? .fps24
+    impactDetectionEnabled = UserDefaults.standard.object(forKey: "impactDetection") as? Bool ?? true
+    impactThreshold = ImpactThreshold(rawValue: UserDefaults.standard.double(forKey: "impactThreshold")) ?? .g3
     ring = RingBuffer(bufferSeconds: 45)
     Self.current = self
     // Live Activity refusée ou retirée en arrière-plan : on la recrée au retour au premier plan.
@@ -136,6 +150,11 @@ final class DashcamRecorder {
     // Après le HFP (qui fixe la catégorie playAndRecord), sinon catégorie playback + mix.
     keepAlive.start()
     liveActivity.start(target: Int(bufferSeconds))
+    if impactDetectionEnabled {
+      impactDetector.start(threshold: impactThreshold.rawValue) { [weak self] g in
+        Task { @MainActor in self?.impactDetected(g) }
+      }
+    }
     telemetry.start(audio: audioSource.rawValue, resolution: "\(resolution.rawValue) @ \(frameRate.rawValue) fps")
     log.notice("[P1] dashcam active — audio=\(self.audioStatus, privacy: .public) résolution=\(self.resolution.rawValue, privacy: .public)")
     uiTask = Task { [weak self] in
@@ -150,6 +169,7 @@ final class DashcamRecorder {
   /// keep-alive (sans lui iOS gèle l'app avant qu'elle puisse relancer la session, écran verrouillé)
   /// et la Live Activity (iOS refuse d'en recréer une en arrière-plan). Sinon, arrêt complet.
   func streamDidStop(dashcamStillWanted: Bool) {
+    impactDetector.stop()
     if isActive {
       isActive = false
       uiTask?.cancel()
@@ -215,6 +235,21 @@ final class DashcamRecorder {
     guard let sample = pcm?.sampleBuffer(presentationTime: pts) else { return }
     ring.appendAudio(sample, hostTime: hostTime)
     telemetry.audio(buffer, now: hostTime)
+  }
+
+  // MARK: - Choc (iPhone)
+
+  private func impactDetected(_ g: Double) {
+    guard isActive, !impactPending else { return }
+    impactPending = true
+    UINotificationFeedbackGenerator().notificationOccurred(.warning)
+    log.notice("[P2] CHOC \(String(format: "%.1f", g), privacy: .public) g — sauvegarde dans \(Int(self.impactPostRoll), privacy: .public) s")
+    Task { [weak self] in
+      guard let self else { return }
+      try? await Task.sleep(for: .seconds(self.impactPostRoll))
+      if self.isActive { await self.save(trigger: .phoneImpact) }
+      self.impactPending = false
+    }
   }
 
   // MARK: - Sauvegarde

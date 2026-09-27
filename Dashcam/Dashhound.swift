@@ -34,6 +34,8 @@ enum DashhoundState: Equatable {
   case saved
   /// Lunettes en pause après un tap sur la branche : clip sauvé, mais plus de film jusqu'au tap suivant.
   case pausedByGlasses
+  /// Choc détecté par l'iPhone : sauvegarde dans quelques secondes (pour garder l'« après »).
+  case impactDetected
   /// Pas de stream (pause, téléphone en poche sans session).
   case resting
   /// Lunettes déconnectées : le buffer est vide.
@@ -53,7 +55,7 @@ enum DashhoundState: Equatable {
     case .onboarding: "dashhound-hero-run"
     case .searching: "dashhound-sniff"
     case .watching: "dashhound-sit-alert"
-    case .ready: "dashhound-face-alert"
+    case .ready, .impactDetected: "dashhound-face-alert"
     case .saved, .pausedByGlasses: "dashhound-look-back"
     case .resting: "dashhound-play-bow"
     case .disconnected, .missingPermission: "dashhound-face-curious"
@@ -75,6 +77,7 @@ enum DashhoundState: Equatable {
     case .ready(let seconds): String(localized: "\(seconds) s en mémoire.")
     case .saved: String(localized: "Sauvé !")
     case .pausedByGlasses: String(localized: "Sauvé. Je reprends dans un instant.")
+    case .impactDetected: String(localized: "Choc détecté ! Je sauve dans un instant.")
     case .resting: String(localized: "Je m'étire.")
     case .disconnected: String(localized: "Hmm, je ne les vois plus.")
     case .tired(_, let isHot): isHot ? String(localized: "J'ai chaud.") : String(localized: "Je fatigue.")
@@ -119,6 +122,7 @@ extension WearablesModel {
     if sessionState == .started, !isCameraGranted, cameraPermission != "—" { return .missingPermission }
     if !hasActiveDevice { return wantsSession ? .disconnected : .searching }
     if recorder.isPausedByGlasses || streamState == .paused || sessionState == .paused { return .pausedByGlasses }
+    if recorder.impactPending { return .impactDetected }
     if recorder.justSaved { return .saved }
     if recorder.isActive {
       let target = Int(recorder.bufferSeconds)

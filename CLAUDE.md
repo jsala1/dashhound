@@ -178,6 +178,13 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   stream encore actif, puis les lunettes prennent la caméra (enregistrement natif) → Dashhound sauve
   les 45 s sur `.hold`, puis le garde-fou (3 reprises / 60 s) l'arrête proprement avec un message.
 
+- **2026-09-27 — détection de choc par l'iPhone (P2 `.phoneImpact`) avant la fin des tests P1**
+  (décision Julian : « go »). CoreMotion 50 Hz, ‖accélération utilisateur‖ ≥ seuil (3 g par défaut,
+  2–5 g réglable), 10 s entre deux déclenchements, sauvegarde **10 s après** le choc (≈ 35 s avant
+  + 10 s après), pics ≥ 1,2 g et crête par 30 s loggés `[P2]` pour calibrer. Aucune coupure (les
+  lunettes ne sont pas sollicitées). Tests ajoutés : 10 chocs simulés ≥ 9/10, **0 faux positif sur
+  20 min de trajet**, calibration du seuil sur les pics réels.
+
 ## Idées retenues (hors phase en cours)
 
 - **Indicateur sur l'écran verrouillé** (idée Julian 2026-09-25) : Live Activity (ActivityKit) sur

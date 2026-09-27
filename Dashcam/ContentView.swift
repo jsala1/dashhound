@@ -216,6 +216,17 @@ private struct SettingsView: View {
         } footer: {
           Text("Test P1 : comparer « stream » et « mains libres ». Le son est coupé pendant un appel.")
         }
+        Section {
+          Toggle("Détection de choc", isOn: $recorder.impactDetectionEnabled)
+          Picker("Seuil", selection: $recorder.impactThreshold) {
+            ForEach(ImpactThreshold.allCases) { Text($0.label).tag($0) }
+          }
+          .disabled(!recorder.impactDetectionEnabled)
+        } header: {
+          Text("Choc (iPhone)")
+        } footer: {
+          Text("Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. Seuil plus haut = moins de déclenchements intempestifs.")
+        }
         Section("Image") {
           Picker("Résolution", selection: $recorder.resolution) {
             ForEach(VideoResolution.allCases) { Text($0.label).tag($0) }
