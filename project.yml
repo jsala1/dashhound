@@ -105,7 +105,7 @@ targets:
     sources:
       - path: DashcamTests
       - path: Dashcam/RingBuffer.swift
-      - path: Dashcam/HEVCKeyframe.swift
+      - path: Dashcam/HEVCRandomAccess.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.juliansalaun.glassesdashcam.tests

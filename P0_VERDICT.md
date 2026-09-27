@@ -9,7 +9,7 @@ audio** : sans lui, iOS suspend l'app en ~2 s et les lunettes coupent la session
 | Élément | Mesuré ce soir |
 |---|---|
 | Xcode / Swift | **27.0** / **6.4** (licence à ré-accepter après la mise à jour) |
-| iPhone | « julian's iPhone », iPhone17,1, **iOS 27.0**, UDID `[UDID]` |
+| iPhone | « julian's iPhone », iPhone17,1, **iOS 27.0** |
 | Lunettes | Ray-Ban Meta « RB Meta 0018 », BT Classic, protocole `com.meta.ar.wearable` |
 | SDK DAT | 1.0.0 (SPM, version exacte) · XcodeGen 2.46.0 · plugin `mwdat-ios` installé |
 | Signing | Personal Team `Y96VPLGJW7` OK — **refuse** les entitlements *Hotspot* et *Access Wi-Fi Information* (retirés du sample) ; `com.julian.*` indisponible → bundle ids `com.juliansalaun.*` |
@@ -106,7 +106,7 @@ accordée via le bouton + confirmation ✅.
 
 ## Reproductibilité
 
-`scripts/bootstrap.sh` puis `git -C vendor/dat apply ../../scripts/p0-cameraaccess.patch` (sample
-patché : pas de coupure en background, entitlements Wi-Fi retirés, garde-fou audio, sonde
-`com.julian.p0probe`, keep-alive, copie des vidéos dans `Documents/P0`). Analyse d'un clip :
-`swift scripts/probe_video.swift <fichier>`. Logs bruts : `captures/` (gitignoré).
+Le sample `CameraAccess` avait été patché localement pour ce test (pas de coupure en background,
+entitlements Wi-Fi retirés, garde-fou audio, sonde de mesure, keep-alive). Ce patch contient du code
+Meta (non libre) : il n'est **pas publié** ; les mêmes mesures sont désormais intégrées à l'app
+Dashhound (télémétrie `[P1]`). Analyse d'un clip : `swift scripts/probe_video.swift <fichier>`.

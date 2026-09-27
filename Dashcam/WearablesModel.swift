@@ -246,9 +246,13 @@ final class WearablesModel {
     guard autoResumeTask == nil else { return }
     autoResumeTask = Task { [weak self] in
       guard let self else { return }
-      if self.recorder.isActive {
+      // Une pause juste après un démarrage n'est pas un tap : ce sont les lunettes qui reprennent la
+      // caméra (enregistrement lancé depuis les lunettes) — sinon clip de 0,7 s (bug 2026-09-27 19:31).
+      if self.recorder.isActive, self.recorder.availableSeconds >= 3 {
         self.log.notice("[P2] pause des lunettes → sauvegarde")
         await self.recorder.save(trigger: .glassesPause)
+      } else {
+        self.log.notice("[P2] pause des lunettes sans mémoire exploitable (< 3 s) → pas de clip")
       }
       self.autoResumeTask = nil
       guard !Task.isCancelled, self.wantsSession,

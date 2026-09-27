@@ -6,7 +6,7 @@ App iOS native (Swift/SwiftUI) qui transforme des Ray-Ban Meta en **dashcam rét
 lunettes streament en continu vers l'iPhone, l'app ne garde que les **45 dernières secondes** en
 mémoire (ring buffer), et sur **déclencheur** (bouton de capture des lunettes, choc détecté par
 l'IMU des lunettes, ou tap dans l'app) elle **fige ces 45 s en .mp4 dans Photos**.
-Projet **perso** de Julian — hors gouvernance [employeur] (pas de Linear, pas de Notion équipe).
+Projet **perso** de Julian (pas de Linear, pas de Notion équipe).
 Pas fait pour aller à l'échelle : un test qui doit **marcher en vrai**, filmable pour un post
 LinkedIn (cf. `docs/Showcase_LinkedIn.md`).
 
@@ -30,8 +30,8 @@ LinkedIn (cf. `docs/Showcase_LinkedIn.md`).
 | LED de capture | Reste allumée en permanence pendant le stream — **assumé par Julian**. Interdit de la contourner (Acceptable Use Policy) | AUP Meta |
 
 Machine (vérifiée le 2026-09-25, P0) : Xcode 27.0, Swift 6.4,
-iPhone « julian's iPhone » iOS 27.0 (UDID `[UDID]`), lunettes **Ray-Ban Meta « RB Meta 0018 »** (sans écran),
-Apple ID [email retiré], **Personal Team `Y96VPLGJW7`** (gratuit → re-signature tous
+iPhone « julian's iPhone » iOS 27.0 (UDID : `xcrun devicectl list devices`), lunettes **Ray-Ban Meta « RB Meta 0018 »** (sans écran),
+Apple ID perso, **Personal Team `Y96VPLGJW7`** (gratuit → re-signature tous
 les 7 jours), pas de compte Meta developer / Developer Mode encore activé.
 
 ## Architecture cible
@@ -51,8 +51,8 @@ Ray-Ban Meta ──stream hvc1 (BT Classic / Wi-Fi)──▶ App iOS
 |---|---|
 | `Dashcam/DashcamApp.swift` | `Wearables.configure()`, `.onOpenURL` → `handleUrl` (filtre `metaWearablesAction`) |
 | `Dashcam/WearablesModel.swift` | Registration Meta AI, `DeviceSession` (AutoDeviceSelector), permission `.camera`, état device (batterie, thermique), reconnexion auto |
-| `Dashcam/RingBuffer.swift` | Deque thread-safe de `(CMSampleBuffer, isKeyframe, hostTime)` ; éviction > `bufferSeconds + 15` ; `snapshot(seconds:now:)` renvoie les buffers depuis la **dernière keyframe ≤ now − seconds** (clip de 45 à 48 s, jamais tronqué ; décision 2026-09-26) · keyframes détectées par type de NAL (`HEVCKeyframe.swift`, copié du sample) · tests `DashcamTests` |
-| `Dashcam/ClipWriter.swift` | `AVAssetWriter` passthrough hvc1 (adapté de `VideoCaptureHandler` du sample), timestamps re-basés à zéro, audio optionnel |
+| `Dashcam/RingBuffer.swift` | Deque thread-safe de `(CMSampleBuffer, isKeyframe, hostTime)` ; éviction > `bufferSeconds + 15` ; `snapshot(seconds:now:)` renvoie les buffers depuis la **dernière keyframe ≤ now − seconds** (clip de 45 à 48 s, jamais tronqué ; décision 2026-09-26) · keyframes détectées par type de NAL (`HEVCRandomAccess.swift`, code maison) · tests `DashcamTests` |
+| `Dashcam/ClipFile.swift` | `ClipWriter` : `AVAssetWriter` passthrough hvc1, timestamps re-basés sur la 1re keyframe, drapeaux de sync, audio AAC — code maison |
 | `Dashcam/TriggerEngine.swift` | Sources : `.manual` (UI), `.captureButton` (Inputs), `.impact` (Motion : ‖a‖ − g > seuil, debounce 10 s, seuil réglable, log des pics), `.phoneImpact` (CoreMotion, fallback) |
 | `Dashcam/ClipStore.swift` | Sauvegarde Photos (`PHPhotoLibrary`) + copie dans Documents ; `UNUserNotification` ; historique des clips |
 | `Dashcam/Dashhound.swift` | `Palette` (9 tokens Color Sets clair/sombre), `DashhoundState` (état → pose, ligne, chiffre), `MascotCard` — cf. `docs/UI_Dashhound.md` |
@@ -146,6 +146,15 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   sans floutage. Le post LinkedIn n'utilisera qu'un clip **sans tiers identifiable**.
 - 📷 **FOV** — le stream est plus étroit que les photos (retour dev GitHub #54). Acceptable.
 
+## Licence et publication
+
+- **2026-09-27 — le code des samples Meta n'est pas sous licence libre** (`vendor/dat/LICENSE` :
+  « Developer Terms » ; en-têtes « All rights reserved »). Les deux fichiers qui en dérivaient ont été
+  **réécrits en code maison** (`HEVCRandomAccess.swift`, `ClipFile.swift`) et vérifiés : 3 clips
+  réels rejoués → fichiers identiques aux originaux (durée, images, keyframes, audio). Le patch du
+  sample (`scripts/p0-cameraaccess.patch`) et les anciennes versions sont retirés de l'historique
+  publié. Aucun code Meta dans le repo : le SDK reste une dépendance SPM, `vendor/` est gitignoré.
+
 ## Décisions UI
 
 - **2026-09-27 — boutons d'action orange (`hound`), texte brun `#1E1A17`** (6,2:1 clair / 7,8:1
@@ -173,7 +182,7 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   sauvegarde sans coupure (`TriggerSource.glassesDoubleTap`). C'est le geste recommandé.
   Demande à Meta (tap simple / bouton sans pause + #256) : **facebook/meta-wearables-dat-ios#312**,
   publiée depuis le compte perso `jsala1` (2026-09-27). Toute publication GitHub du projet part de
-  `jsala1`, jamais de `[compte pro]`.
+  `jsala1`, jamais d'un compte professionnel.
   **Mesuré 2026-09-27 (18:33)** : l'**appui long** sur le bouton de capture remonte `capture(.hold)`
   stream encore actif, puis les lunettes prennent la caméra (enregistrement natif) → Dashhound sauve
   les 45 s sur `.hold`, puis le garde-fou (3 reprises / 60 s) l'arrête proprement avec un message.

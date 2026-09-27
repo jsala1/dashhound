@@ -52,6 +52,15 @@ private func feed(_ buffer: RingBuffer, seconds: Double, start: Double = 1000, f
   #expect(!makeVideoSample(nalType: 1, pts: 0).isHEVCKeyframe())  // TRAIL_R
 }
 
+@Test func keyframeDetectionScansEveryNALUnit() {
+  // Paramètres (VPS 32) puis tranche IDR (19) : l'image clé est la 2e unité.
+  let bytes: [UInt8] = [0, 0, 0, 2, 32 << 1, 0x01, 0, 0, 0, 2, 19 << 1, 0x01]
+  #expect(bytes.withUnsafeBytes { HEVCRandomAccess.containsRandomAccessPoint($0) })
+  // Longueur incohérente : rejetée sans lire hors du tampon.
+  let broken: [UInt8] = [0, 0, 0, 40, 19 << 1, 0x01]
+  #expect(!broken.withUnsafeBytes { HEVCRandomAccess.containsRandomAccessPoint($0) })
+}
+
 @Test func snapshotCoversAtLeastTheRequestedSecondsAndStartsOnAKeyframe() throws {
   let buffer = RingBuffer(bufferSeconds: 45)
   let now = feed(buffer, seconds: 120)
