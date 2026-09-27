@@ -16,7 +16,7 @@ après le trajet. Mesures ci-dessous : logs `[P1]` / `[P2]` de l'app et analyse 
 | Écran verrouillé | stream maintenu (keep-alive) ; **1 seule suspension de 1,6 s en 7 min** (test A) |
 | RAM | 25 à 59 Mo, stable |
 | Son | micro des lunettes via l'audio du stream SDK (PCM 16 kHz mono) ; **synchro validée à l'oreille** par Julian |
-| Appel | détecté (CallKit) ; **son du clip à −120 dBFS dès la seconde du début d'appel**, vidéo continue (clips 18:50:39/42 : 22,7 et 25,2 s, 0 trou) — la conversation n'est jamais enregistrée |
+| Appel | détecté (CallKit) ; **son du clip à −120 dBFS dès la seconde du début d'appel** — la conversation n'est jamais enregistrée. Écran verrouillé **pendant** l'appel (18:50) : iOS interrompt le keep-alive, 2 micro-gels de 1,5–1,6 s, ~17 fps, mais le stream tient (10 s mesurées) et les clips n'ont **aucun trou** (22,7 et 25,2 s) |
 | Plans | le micro des lunettes continue de capter (−16 à −37 dBFS) |
 | Live Activity | écran verrouillé + Dynamic Island, bouton Sauver sans déverrouiller ; conservée pendant les reprises |
 | Tests unitaires | RingBuffer + détection keyframe : **7/7** |
@@ -56,6 +56,8 @@ lunettes filment elles-mêmes.
 1. **Trajet réel de 10 min**, écran verrouillé en poche : 3 sauvegardes (double tap, bouton écran
    verrouillé, tap simple), clips 45–48 s, 0 trou, pas d'image verte, son synchro.
 2. **Coupure Bluetooth** (lunettes pliées 10 s) → reconnexion auto, « Le buffer est vide ».
-3. **Appel reçu téléphone en poche** → la dashcam continue pendant et après l'appel.
+3. **Appel reçu téléphone en poche, prolongé** → la dashcam continue pendant **et au moins 1 min
+   après** l'appel (relance du keep-alive à la fin de l'interruption : pas encore exercée, la
+   dashcam avait été arrêtée 0,2 s après la fin de l'appel).
 4. **Batterie** mesurée sur les 10 min réelles.
 5. « Hey Meta, lance Dashhound » après configuration Developer Center.
