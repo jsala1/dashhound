@@ -220,6 +220,9 @@ private struct SettingsView: View {
           Picker("Résolution", selection: $recorder.resolution) {
             ForEach(VideoResolution.allCases) { Text($0.label).tag($0) }
           }
+          Picker("Images par seconde", selection: $recorder.frameRate) {
+            ForEach(FrameRateSetting.allCases) { Text($0.label).tag($0) }
+          }
         }
         Section {
           Text("Changer un réglage relance le stream : la mémoire repart de zéro.")

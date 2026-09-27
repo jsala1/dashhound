@@ -37,6 +37,14 @@ enum VideoResolution: String, CaseIterable, Identifiable, Sendable {
   }
 }
 
+/// Débit d'images demandé au SDK (valeurs acceptées : 2, 7, 15, 24, 30). 15 et 7 servent à tester si
+/// la musique Bluetooth revient quand le flux vidéo laisse de la place (bug #256, 2026-09-27).
+enum FrameRateSetting: UInt, CaseIterable, Identifiable, Sendable {
+  case fps24 = 24, fps15 = 15, fps7 = 7
+  var id: UInt { rawValue }
+  var label: String { String(localized: "\(rawValue) images/s") }
+}
+
 @Observable
 @MainActor
 final class DashcamRecorder {
@@ -47,6 +55,9 @@ final class DashcamRecorder {
   }
   var resolution: VideoResolution {
     didSet { UserDefaults.standard.set(resolution.rawValue, forKey: "resolution") }
+  }
+  var frameRate: FrameRateSetting {
+    didSet { UserDefaults.standard.set(Int(frameRate.rawValue), forKey: "frameRate") }
   }
   let bufferSeconds: TimeInterval = 45
 
@@ -88,6 +99,7 @@ final class DashcamRecorder {
     // ~15 fps 22 % du temps (test A, 2026-09-26) — et un changement de résolution en plein clip
     // risque de corrompre le passthrough.
     resolution = UserDefaults.standard.string(forKey: "resolution").flatMap(VideoResolution.init) ?? .low
+    frameRate = FrameRateSetting(rawValue: UInt(UserDefaults.standard.integer(forKey: "frameRate"))) ?? .fps24
     ring = RingBuffer(bufferSeconds: 45)
     Self.current = self
     // Live Activity refusée ou retirée en arrière-plan : on la recrée au retour au premier plan.
@@ -124,7 +136,7 @@ final class DashcamRecorder {
     // Après le HFP (qui fixe la catégorie playAndRecord), sinon catégorie playback + mix.
     keepAlive.start()
     liveActivity.start(target: Int(bufferSeconds))
-    telemetry.start(audio: audioSource.rawValue, resolution: resolution.rawValue)
+    telemetry.start(audio: audioSource.rawValue, resolution: "\(resolution.rawValue) @ \(frameRate.rawValue) fps")
     log.notice("[P1] dashcam active — audio=\(self.audioStatus, privacy: .public) résolution=\(self.resolution.rawValue, privacy: .public)")
     uiTask = Task { [weak self] in
       while !Task.isCancelled {

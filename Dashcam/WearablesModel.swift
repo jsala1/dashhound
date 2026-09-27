@@ -235,7 +235,7 @@ final class WearablesModel {
       videoCodec: .hvc1,
       audioCodec: streamAudio ? .pcm(sampleRate: .rate16000, numberOfChannels: 1) : nil,
       resolution: recorder.resolution.sdk,
-      frameRate: 24)
+      frameRate: recorder.frameRate.rawValue)
     do {
       guard let newCamera = try session.addCamera(config: config) else {
         errorMessage = String(localized: "Caméra des lunettes indisponible, réessaie.")
@@ -264,7 +264,7 @@ final class WearablesModel {
         }.store(in: streamTokens)
       }
       streamState = .starting
-      log.notice("stream start — \(self.recorder.resolution.rawValue, privacy: .public), audio stream=\(streamAudio, privacy: .public)")
+      log.notice("stream start — \(self.recorder.resolution.rawValue, privacy: .public) @ \(self.recorder.frameRate.rawValue, privacy: .public) fps, audio stream=\(streamAudio, privacy: .public)")
       stream.start()
     } catch {
       camera = nil

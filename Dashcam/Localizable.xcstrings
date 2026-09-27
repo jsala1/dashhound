@@ -43,6 +43,16 @@
         }
       }
     },
+    "%llu images/s": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%llu fps"
+          }
+        }
+      }
+    },
     "Accès à Photos refusé": {
       "localizations": {
         "en": {
@@ -299,6 +309,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Image"
+          }
+        }
+      }
+    },
+    "Images par seconde": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frames per second"
           }
         }
       }
