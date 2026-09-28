@@ -7,6 +7,7 @@ struct ContentView: View {
   @State private var confirmCameraRedirect = false
   @State private var confirmMicrophoneRedirect = false
   @State private var showSettings = false
+  @AppStorage("disclaimerAccepted") private var disclaimerAccepted = false
 
   private var recorder: DashcamRecorder { model.recorder }
 
@@ -44,12 +45,15 @@ struct ContentView: View {
         Section("Lunettes") {
           row("Appareil", model.deviceName ?? (model.hasActiveDevice ? "…" : String(localized: "aucun")))
           row("Batterie", model.batteryLevel.map { "\($0) %" } ?? "—")
-          row("Thermique", model.thermal)
-          row("Session", model.sessionState.description)
-          row("Stream", String(describing: model.streamState))
-          row("Bouton des lunettes", model.inputsStatus)
-          row("« Hey Meta »", model.voiceStatus)
-          row("Meta AI", model.registrationLabel)
+          DisclosureGroup("Détails techniques") {
+            row("Thermique", model.thermal)
+            row("Session", model.sessionState.description)
+            row("Stream", String(describing: model.streamState))
+            row("Bouton des lunettes", model.inputsStatus)
+            row("« Hey Meta »", model.voiceStatus)
+            row("Meta AI", model.registrationLabel)
+          }
+          .font(.subheadline)
         }
       }
       .scrollContentBackground(.hidden)
@@ -61,6 +65,9 @@ struct ContentView: View {
           .accessibilityLabel("Réglages")
       }
       .sheet(isPresented: $showSettings) { SettingsView(model: model) }
+      .fullScreenCover(isPresented: Binding(get: { !disclaimerAccepted }, set: { _ in })) {
+        DisclaimerView { disclaimerAccepted = true }
+      }
       .confirmationDialog(
         "L'app va ouvrir Meta AI pour autoriser la caméra des lunettes.",
         isPresented: $confirmCameraRedirect, titleVisibility: .visible
@@ -214,7 +221,7 @@ private struct SettingsView: View {
         } header: {
           Text("Son des clips")
         } footer: {
-          Text("Test P1 : comparer « stream » et « mains libres ». Le son est coupé pendant un appel.")
+          Text("Le son est coupé pendant un appel : les conversations ne sont jamais enregistrées.")
         }
         Section {
           Toggle("Détection de choc", isOn: $recorder.impactDetectionEnabled)
@@ -231,13 +238,22 @@ private struct SettingsView: View {
           Picker("Résolution", selection: $recorder.resolution) {
             ForEach(VideoResolution.allCases) { Text($0.label).tag($0) }
           }
-          Picker("Images par seconde", selection: $recorder.frameRate) {
-            ForEach(FrameRateSetting.allCases) { Text($0.label).tag($0) }
-          }
         }
         Section {
           Text("Changer un réglage relance le stream : la mémoire repart de zéro.")
             .font(.footnote).foregroundStyle(Palette.inkMuted)
+        }
+        Section {
+          Link(destination: Feedback.url(template: "bug")) {
+            Label("Signaler un bug", systemImage: "ladybug")
+          }
+          Link(destination: Feedback.url(template: "idea")) {
+            Label("Suggérer une idée", systemImage: "lightbulb")
+          }
+        } header: {
+          Text("Aide")
+        } footer: {
+          Text("Ouvre un ticket GitHub pré-rempli avec la version de l'app, le modèle d'iPhone et la version d'iOS — rien d'autre n'est envoyé. \(Feedback.versionLine)")
         }
       }
       .navigationTitle("Réglages")
@@ -248,5 +264,75 @@ private struct SettingsView: View {
         }
       }
     }
+  }
+}
+
+/// Premier lancement : Dashhound est expérimental — il faut l'avoir lu avant de s'en servir.
+private struct DisclaimerView: View {
+  let onAccept: () -> Void
+
+  var body: some View {
+    VStack(spacing: 24) {
+      Spacer(minLength: 12)
+      Image("dashhound-face-wink").resizable().scaledToFit()
+        .frame(width: 160, height: 160)
+        .background(Palette.mascotPaper, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .accessibilityHidden(true)
+      Text("Avant de commencer").font(.title.bold()).foregroundStyle(Palette.ink)
+      Text(
+        "Dashhound est un logiciel expérimental, fourni tel quel. Il peut ne pas réussir à sauver un clip. Ce n'est pas un dispositif de sécurité et il ne remplace pas une dashcam certifiée. Tu es responsable de l'utiliser légalement là où tu vis."
+      )
+      .font(.body)
+      .foregroundStyle(Palette.ink)
+      .multilineTextAlignment(.center)
+      .fixedSize(horizontal: false, vertical: true)
+      Spacer()
+      Button(action: onAccept) {
+        Text("J'ai compris")
+          .font(.title3.bold())
+          .foregroundStyle(Palette.onHound)
+          .frame(maxWidth: .infinity, minHeight: 60)
+          .background(Palette.hound, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+      }
+      .buttonStyle(.plain)
+    }
+    .padding(24)
+    .background(Palette.bg)
+    .interactiveDismissDisabled()
+  }
+}
+
+/// Liens vers les tickets GitHub pré-remplis (formulaires .github/ISSUE_TEMPLATE/).
+enum Feedback {
+  static let repo = "https://github.com/jsala1/dashhound"
+
+  static var appVersion: String {
+    let info = Bundle.main.infoDictionary
+    let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+    let build = info?["CFBundleVersion"] as? String ?? "?"
+    return "\(version) (\(build))"
+  }
+
+  static var deviceModel: String {
+    var system = utsname()
+    uname(&system)
+    return withUnsafeBytes(of: &system.machine) { raw in
+      String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
+    }
+  }
+
+  static var versionLine: String {
+    "Dashhound \(appVersion) · \(deviceModel) · iOS \(UIDevice.current.systemVersion)"
+  }
+
+  static func url(template: String) -> URL {
+    var components = URLComponents(string: "\(repo)/issues/new")!
+    components.queryItems = [
+      URLQueryItem(name: "template", value: "\(template).yml"),
+      URLQueryItem(name: "app-version", value: appVersion),
+      URLQueryItem(name: "iphone", value: deviceModel),
+      URLQueryItem(name: "ios", value: UIDevice.current.systemVersion),
+    ]
+    return components.url!
   }
 }

@@ -1,0 +1,12 @@
+// Copy this file to Config.xcconfig (ignored by git) and put your own values.
+// Copie ce fichier en Config.xcconfig (ignoré par git) et mets tes propres valeurs.
+
+// Your Apple Team ID (10 characters): Xcode › Settings › Accounts › your Apple ID › "Personal Team".
+DASHHOUND_TEAM_ID = ABCDE12345
+
+// A unique app identifier: replace "yourname" (letters, digits, dots only).
+DASHHOUND_BUNDLE_ID = com.yourname.dashhound
+
+// Leave empty when Developer Mode is enabled in the Meta AI app.
+META_APP_ID =
+CLIENT_TOKEN =

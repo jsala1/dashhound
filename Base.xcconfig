@@ -1,3 +1,8 @@
-// Réglages communs Dashcam. Les identifiants Wearables Developer Center (META_APP_ID,
-// CLIENT_TOKEN) viennent de Config.xcconfig, gitignoré ; absent = Developer Mode sans attestation.
+// Réglages communs Dashhound.
+// Signature : valeurs du mainteneur par défaut. Pour installer Dashhound avec TON compte Apple,
+// copie Config.example.xcconfig en Config.xcconfig (non versionné) et mets-y tes valeurs : elles
+// remplacent celles-ci. Voir INSTALL.md.
+DASHHOUND_TEAM_ID = Y96VPLGJW7
+DASHHOUND_BUNDLE_ID = com.juliansalaun.glassesdashcam
+// Identifiants Wearables Developer Center (META_APP_ID, CLIENT_TOKEN) : vides = Developer Mode.
 #include? "Config.xcconfig"

@@ -73,6 +73,16 @@
         }
       }
     },
+    "Aide": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help"
+          }
+        }
+      }
+    },
     "Appareil": {
       "localizations": {
         "en": {
@@ -109,6 +119,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allow glasses microphone…"
+          }
+        }
+      }
+    },
+    "Avant de commencer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before you start"
           }
         }
       }
@@ -243,6 +263,16 @@
         }
       }
     },
+    "Dashhound est un logiciel expérimental, fourni tel quel. Il peut ne pas réussir à sauver un clip. Ce n'est pas un dispositif de sécurité et il ne remplace pas une dashcam certifiée. Tu es responsable de l'utiliser légalement là où tu vis.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashhound is experimental software, provided as is. It may fail to save a clip. It is not a safety device and does not replace a certified dashcam. You are responsible for using it lawfully where you live."
+          }
+        }
+      }
+    },
     "Dashhound · Rewind": {
       "localizations": {
         "en": {
@@ -283,6 +313,16 @@
         }
       }
     },
+    "Détails techniques": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Technical details"
+          }
+        }
+      }
+    },
     "Détection de choc": {
       "localizations": {
         "en": {
@@ -309,16 +349,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kept in the app (not in Photos)"
-          }
-        }
-      }
-    },
-    "HFP : %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "HFP: %@"
           }
         }
       }
@@ -353,22 +383,22 @@
         }
       }
     },
-    "Images par seconde": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frames per second"
-          }
-        }
-      }
-    },
     "J'ai chaud.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "I'm hot."
+          }
+        }
+      }
+    },
+    "J'ai compris": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I understand"
           }
         }
       }
@@ -463,6 +493,16 @@
         }
       }
     },
+    "Le son est coupé pendant un appel : les conversations ne sont jamais enregistrées.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound is muted during a call: conversations are never recorded."
+          }
+        }
+      }
+    },
     "Lunettes": {
       "localizations": {
         "en": {
@@ -493,22 +533,22 @@
         }
       }
     },
-    "Micro des lunettes (Bluetooth mains libres)": {
+    "Micro des lunettes": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glasses microphone (Bluetooth hands-free)"
+            "value": "Glasses microphone"
           }
         }
       }
     },
-    "Micro des lunettes (stream)": {
+    "Micro des lunettes (mains libres, vidéo moins fluide)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glasses microphone (stream)"
+            "value": "Glasses microphone (hands-free, less smooth video)"
           }
         }
       }
@@ -529,6 +569,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "OK"
+          }
+        }
+      }
+    },
+    "Ouvre un ticket GitHub pré-rempli avec la version de l'app, le modèle d'iPhone et la version d'iOS — rien d'autre n'est envoyé. %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens a pre-filled GitHub issue with the app version, iPhone model and iOS version — nothing else is sent. %@"
           }
         }
       }
@@ -693,6 +743,16 @@
         }
       }
     },
+    "Signaler un bug": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report a bug"
+          }
+        }
+      }
+    },
     "Son": {
       "localizations": {
         "en": {
@@ -733,12 +793,12 @@
         }
       }
     },
-    "Test P1 : comparer « stream » et « mains libres ». Le son est coupé pendant un appel.": {
+    "Suggérer une idée": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "P1 test: compare “stream” and “hands-free”. Sound is muted during a call."
+            "value": "Suggest an idea"
           }
         }
       }
@@ -803,12 +863,12 @@
         }
       }
     },
-    "coupé (réglage)": {
+    "autorisation du micro manquante — vidéo seule": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "off (setting)"
+            "value": "microphone permission missing — video only"
           }
         }
       }
@@ -823,12 +883,42 @@
         }
       }
     },
+    "démarrage…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "starting…"
+          }
+        }
+      }
+    },
+    "désactivé": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "off"
+          }
+        }
+      }
+    },
     "en cours…": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "in progress…"
+          }
+        }
+      }
+    },
+    "enregistré": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "recording"
           }
         }
       }
@@ -873,12 +963,12 @@
         }
       }
     },
-    "micro HFP indisponible — vidéo seule": {
+    "micro indisponible — vidéo seule": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "HFP microphone unavailable — video only"
+            "value": "microphone unavailable — video only"
           }
         }
       }
@@ -903,42 +993,12 @@
         }
       }
     },
-    "permission micro manquante — vidéo seule": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "microphone permission missing — video only"
-          }
-        }
-      }
-    },
     "refusé (Developer Center)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "denied (Developer Center)"
-          }
-        }
-      }
-    },
-    "stream (en attente des premières trames)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "stream (waiting for first frames)"
-          }
-        }
-      }
-    },
-    "stream : %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "stream: %@"
           }
         }
       }

@@ -13,8 +13,8 @@ enum AudioSource: String, CaseIterable, Identifiable, Sendable {
   var id: String { rawValue }
   var label: String {
     switch self {
-    case .stream: String(localized: "Micro des lunettes (stream)")
-    case .hfp: String(localized: "Micro des lunettes (Bluetooth mains libres)")
+    case .stream: String(localized: "Micro des lunettes")
+    case .hfp: String(localized: "Micro des lunettes (mains libres, vidéo moins fluide)")
     case .off: String(localized: "Sans son")
     }
   }
@@ -111,7 +111,8 @@ final class DashcamRecorder {
     // ~15 fps 22 % du temps (test A, 2026-09-26) — et un changement de résolution en plein clip
     // risque de corrompre le passthrough.
     resolution = UserDefaults.standard.string(forKey: "resolution").flatMap(VideoResolution.init) ?? .low
-    frameRate = FrameRateSetting(rawValue: UInt(UserDefaults.standard.integer(forKey: "frameRate"))) ?? .fps24
+    // Réglage de test (musique / #256) retiré de l'écran : toujours 24 fps.
+    frameRate = .fps24
     impactDetectionEnabled = UserDefaults.standard.object(forKey: "impactDetection") as? Bool ?? true
     impactThreshold = ImpactThreshold(rawValue: UserDefaults.standard.double(forKey: "impactThreshold")) ?? .g12
     ring = RingBuffer(bufferSeconds: 45)
@@ -137,15 +138,15 @@ final class DashcamRecorder {
     case .stream:
       awaitingStreamAudio = streamAudio
       audioStatus = streamAudio
-        ? String(localized: "stream (en attente des premières trames)")
-        : String(localized: "permission micro manquante — vidéo seule")
+        ? String(localized: "démarrage…")
+        : String(localized: "autorisation du micro manquante — vidéo seule")
     case .hfp:
       let ok = hfp.start(preferring: glassesName) { [weak self] buffer, hostTime in
         self?.ingestHFPAudio(buffer, hostTime: hostTime)
       }
-      audioStatus = ok ? String(localized: "HFP : \(hfp.inputName ?? "?")") : String(localized: "micro HFP indisponible — vidéo seule")
+      audioStatus = ok ? String(localized: "enregistré") : String(localized: "micro indisponible — vidéo seule")
     case .off:
-      audioStatus = String(localized: "coupé (réglage)")
+      audioStatus = String(localized: "désactivé")
     }
     // Après le HFP (qui fixe la catégorie playAndRecord), sinon catégorie playback + mix.
     keepAlive.start()
@@ -195,7 +196,7 @@ final class DashcamRecorder {
     availableSeconds = Int(ring.availableSeconds(now: CACurrentMediaTime()).rounded(.down))
     if awaitingStreamAudio, telemetry.audioSamplesSeen > 0 {
       awaitingStreamAudio = false
-      audioStatus = String(localized: "stream : \(telemetry.audioFormatDescription)")
+      audioStatus = String(localized: "enregistré")
     }
     if calls.isOnCall { audioStatus = String(localized: "coupé pendant l'appel") }
     updateLiveActivity()

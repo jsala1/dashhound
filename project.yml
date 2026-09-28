@@ -18,7 +18,8 @@ configFiles:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    DEVELOPMENT_TEAM: Y96VPLGJW7
+    # Team et identifiant : Base.xcconfig (défauts) / Config.xcconfig (les tiens). Voir INSTALL.md.
+    DEVELOPMENT_TEAM: $(DASHHOUND_TEAM_ID)
     CODE_SIGN_STYLE: Automatic
     SWIFT_STRICT_CONCURRENCY: complete
     SWIFT_EMIT_LOC_STRINGS: YES
@@ -47,7 +48,7 @@ targets:
         product: MWDATInputs
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.juliansalaun.glassesdashcam
+        PRODUCT_BUNDLE_IDENTIFIER: $(DASHHOUND_BUNDLE_ID)
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         TARGETED_DEVICE_FAMILY: "1"
@@ -95,7 +96,7 @@ targets:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.juliansalaun.glassesdashcam.widget
+        PRODUCT_BUNDLE_IDENTIFIER: $(DASHHOUND_BUNDLE_ID).widget
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) WIDGET_EXTENSION
         TARGETED_DEVICE_FAMILY: "1"
   DashcamTests:
@@ -108,7 +109,7 @@ targets:
       - path: Dashcam/HEVCRandomAccess.swift
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.juliansalaun.glassesdashcam.tests
+        PRODUCT_BUNDLE_IDENTIFIER: $(DASHHOUND_BUNDLE_ID).tests
         GENERATE_INFOPLIST_FILE: YES
 schemes:
   Dashcam:
