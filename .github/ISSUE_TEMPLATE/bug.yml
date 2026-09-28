@@ -1,0 +1,47 @@
+name: Bug report
+description: Something doesn't work as expected (clip missing, crash, glasses not found…)
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Dashhound is experimental — every report helps. Please check the **Known limitations** in the README first (e.g. music is muted in the glasses while they film: that is a Meta limitation).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start the dashcam
+        2. Lock the screen, phone in pocket
+        3. Double-tap the temple after 1 min
+        4. …
+  - type: input
+    id: app-version
+    attributes:
+      label: Dashhound version
+      description: Filled in automatically when you use "Report a bug" in the app's settings.
+  - type: input
+    id: iphone
+    attributes:
+      label: iPhone model
+  - type: input
+    id: ios
+    attributes:
+      label: iOS version
+  - type: input
+    id: glasses
+    attributes:
+      label: Glasses
+      placeholder: Ray-Ban Meta (Gen 2), firmware …
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots, video or logs
+      description: Drag and drop files here. Please make sure no one else can be identified in images you share.

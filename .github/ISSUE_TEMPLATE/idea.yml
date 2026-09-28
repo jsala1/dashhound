@@ -1,0 +1,27 @@
+name: Idea / suggestion
+description: Something Dashhound could do better or differently
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help?
+      description: When would you use it? What does it change for you?
+  - type: input
+    id: app-version
+    attributes:
+      label: Dashhound version (optional)
+  - type: input
+    id: iphone
+    attributes:
+      label: iPhone model (optional)
+  - type: input
+    id: ios
+    attributes:
+      label: iOS version (optional)

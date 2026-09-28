@@ -1,0 +1,45 @@
+name: Installation help
+description: Stuck while installing Dashhound with Xcode (see INSTALL.md)
+labels: [install]
+body:
+  - type: dropdown
+    id: step
+    attributes:
+      label: Which INSTALL.md step are you stuck at?
+      options:
+        - "1. Install Xcode"
+        - "2. Developer Mode on the iPhone"
+        - "3. Developer Mode in the Meta AI app"
+        - "4. Download Dashhound"
+        - "5. Run the setup script"
+        - "6. Apple ID, Personal Team and Config.xcconfig"
+        - "7. Unique app identifier"
+        - "8. Run on the iPhone and trust the developer"
+        - "9. First launch (Meta AI connection, permissions)"
+        - "10. First double tap"
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Exact error message
+      description: Copy the text, or add a screenshot below.
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+  - type: input
+    id: xcode
+    attributes:
+      label: Xcode version
+  - type: input
+    id: iphone
+    attributes:
+      label: iPhone model and iOS version
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Drag and drop an image here.

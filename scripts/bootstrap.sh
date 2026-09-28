@@ -29,11 +29,31 @@ fi
 ok "XcodeGen $(xcodegen --version | awk '{print $NF}')"
 
 echo "== Your signing settings (Config.xcconfig)"
-if [ -f Config.xcconfig ]; then
-  ok "Config.xcconfig already exists (left untouched)"
-else
+if [ ! -f Config.xcconfig ]; then
   cp Config.example.xcconfig Config.xcconfig
-  todo "Created Config.xcconfig: open it and set DASHHOUND_TEAM_ID and DASHHOUND_BUNDLE_ID (see INSTALL.md, step 6)."
+  ok "Created Config.xcconfig from Config.example.xcconfig"
+fi
+# Only the example placeholders are ever replaced — real values are never touched.
+if grep -q "ABCDE12345" Config.xcconfig; then
+  TEAM=$(defaults export com.apple.dt.Xcode - 2>/dev/null \
+    | plutil -extract IDEProvisioningTeamByIdentifier json -o - - 2>/dev/null \
+    | python3 -c 'import json,sys
+try:
+    teams = [t for ts in json.load(sys.stdin).values() for t in ts]
+except Exception:
+    teams = []
+teams.sort(key=lambda t: not t.get("isFreeProvisioningTeam"))
+print(teams[0]["teamID"] if teams else "")' 2>/dev/null || true)
+  if [ -n "$TEAM" ]; then
+    BUNDLE="com.dashhound.u$(echo "$TEAM" | tr 'A-Z' 'a-z')"
+    sed -i '' "s/ABCDE12345/$TEAM/; s/com\.yourname\.dashhound/$BUNDLE/" Config.xcconfig
+    ok "Team ID $TEAM and app identifier $BUNDLE written to Config.xcconfig"
+  else
+    todo "No Apple account found in Xcode yet: Xcode › Settings › Accounts › + › Apple ID,"
+    todo "then run scripts/bootstrap.sh again (INSTALL.md, step 6)."
+  fi
+else
+  ok "Config.xcconfig already configured (left untouched)"
 fi
 
 if [ "${1:-}" = "--dev" ]; then
