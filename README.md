@@ -35,7 +35,7 @@ Honest list, updated as we learn. Most come from the glasses platform (Meta deve
 - **Video is 360×640** at 24 fps: at higher resolution the glasses drop quality on their own.
 - **Not on the App Store.** Meta's toolkit is in developer preview: you build and install Dashhound yourself with Xcode, and with a free Apple account the app must be re-installed **every 7 days**.
 - **"Hey Meta, start Dashhound"** is wired in the app but not validated yet.
-- iPhone only. Tested with Ray-Ban Meta (Gen 2) and iOS 27.
+- iPhone only. Tested with one pair of Ray-Ban Meta glasses and iOS 27.
 
 ## Install
 
