@@ -8,7 +8,7 @@ mémoire (ring buffer), et sur **déclencheur** (bouton de capture des lunettes,
 l'IMU des lunettes, ou tap dans l'app) elle **fige ces 45 s en .mp4 dans Photos**.
 Projet **perso** de Julian (pas de Linear, pas de Notion équipe).
 Pas fait pour aller à l'échelle : un test qui doit **marcher en vrai**, filmable pour un post
-LinkedIn (cf. `docs/Showcase_LinkedIn.md`).
+LinkedIn (brouillon dans `private/`, hors repo).
 
 > **Source de vérité : ce fichier + `docs/PREREQUIS.md`.** Le projet frère
 > `~/glasses-copilot` (même auteur, même Mac, même iPhone, mêmes lunettes) est une référence
@@ -71,7 +71,7 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
 | **P0 — Onboarding DAT** (1 soirée) | Developer Mode activé, sample `CameraAccess` buildé et lancé sur l'iPhone de Julian, stream visible depuis ses lunettes, **un enregistrement de 2 min en hvc1 avec l'app en arrière-plan** | Vidéo lisible dans Photos · stream tient 2 min écran éteint · `P0_VERDICT.md` avec : latence de connexion, batterie lunettes avant/après, résolution/fps réels obtenus |
 | **P1 — Dashcam cœur** (1-2 soirées) | Ring buffer + déclencheur manuel (bouton app) + clip 45 s dans Photos + fonctionne téléphone en poche | Trajet réel de 10 min, 3 taps → 3 clips de 45 s ± 3 s (GOP mesuré ≈ 3 s), image continue (pas de trou, pas de frame verte), audio synchro · RAM stable (pas de fuite sur 10 min) · reconnexion propre après coupure BT |
 | **P2 — Déclencheurs lunettes** (1-2 soirées) | Bouton de capture des lunettes (Inputs) + détection de choc (Motion) + fallback CoreMotion | 10 chocs simulés (tape sèche sur la branche / saut) → ≥ 9/10 clips · **0 faux positif sur un trajet de 20 min** (pavés, freinages) · bouton lunettes → clip en < 1 s |
-| **P3 — Showcase** (1 soirée) | UI propre à filmer, clip vidéo + post LinkedIn (`docs/Showcase_LinkedIn.md`) | Julian valide le post avant publication |
+| **P3 — Showcase** (1 soirée) | UI propre à filmer, clip vidéo + post LinkedIn (`private/Showcase_LinkedIn.md`, hors repo) | Julian valide le post avant publication |
 
 ## Règles de travail
 
