@@ -6,7 +6,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-START="${1:?Donne l'heure de début, ex. : scripts/collect_logs.sh \"2026-09-28 18:55\"}"
+if [ $# -lt 1 ]; then
+  echo 'Usage : scripts/collect_logs.sh "2026-09-28 18:55"   (heure un peu avant le départ)'
+  exit 1
+fi
+START="$1"
 UDID=$(xcrun devicectl list devices 2>/dev/null | awk '/available \(paired\)/ && $0 !~ /simulated/ {for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) print $i}' | head -1)
 [ -n "$UDID" ] || { echo "iPhone introuvable : branche-le et déverrouille-le."; exit 1; }
 
