@@ -223,9 +223,9 @@ private struct SettingsView: View {
           }
           .disabled(!recorder.impactDetectionEnabled)
         } header: {
-          Text("Choc (iPhone)")
+          Text("Choc (iPhone) — bêta")
         } footer: {
-          Text("Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. Seuil plus haut = moins de déclenchements intempestifs.")
+          Text("Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. En test : sur un vrai trajet, téléphone en poche, les nids-de-poule montent jusqu'à ~9 g — d'où 12 g par défaut.")
         }
         Section("Image") {
           Picker("Résolution", selection: $recorder.resolution) {

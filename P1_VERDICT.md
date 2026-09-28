@@ -6,6 +6,19 @@ Bluetooth, appel reçu téléphone en poche, mesure batterie longue**. Ce docume
 après le trajet. Mesures ci-dessous : logs `[P1]` / `[P2]` de l'app et analyse des fichiers
 (`scripts/probe_video.swift`, `scripts/audio_levels.swift`).
 
+## Trajet réel du 2026-09-28 (journal iPhone `log collect`, 12 min filmées en 2 sessions)
+
+| Point | Mesure |
+|---|---|
+| Clips | **26 clips**, tous 45–48 s une fois la mémoire pleine, 24 fps, **0 trou d'image** (écart max 82 ms) |
+| Fluidité | 154 fenêtres de 5 s : médiane **24,0 fps**, minimum 18,3 ; **0 suspension iOS** |
+| Double tap en roulant | **4/4** sauvegardes, sans coupure |
+| Détection de choc à 3 g | ❌ **22 faux positifs en 12 min** (nids-de-poule, téléphone en poche) : 1 644 pics ≥ 1,2 g, 139 ≥ 3 g, 7 ≥ 8 g, **0 ≥ 10 g** (max 9,4 g) → seuil recalibré à **12 g** (choix 8/12/16/20 g), marqué bêta |
+| Batterie | session 1 : 100 → 84 % en 7 min 06 s (**2,3 %/min**) ; session 2 : 76 → 49 % en 5,4 min (**~5 %/min**) ⇒ autonomie **~20 à ~43 min** selon les conditions — à mesurer sur une session longue |
+| Musique / guidage vocal | inaudibles dans les lunettes pendant tout le trajet (limite Meta #256, confirmée) |
+| Écran | **jamais verrouillé** pendant ce trajet (aucun événement de verrouillage) → le cas « poche, écran verrouillé » reste à valider sur trajet |
+| Appel | l'appel de 19:10:40 a eu lieu **après** l'arrêt de la dashcam → non testé en roulant |
+
 ## Ce qui marche (mesuré)
 
 | Point | Mesure |
@@ -53,8 +66,9 @@ lunettes filment elles-mêmes.
 
 ## Reste à faire pour valider la P1
 
-1. **Trajet réel de 10 min**, écran verrouillé en poche : 3 sauvegardes (double tap, bouton écran
-   verrouillé, tap simple), clips 45–48 s, 0 trou, pas d'image verte, son synchro.
+1. ~~Trajet réel~~ fait le 28/09 (clips 45–48 s, 0 trou, double tap 4/4) — **à refaire écran
+   verrouillé, téléphone en poche**, et avec la détection de choc à 12 g : **0 faux positif sur
+   20 min** exigé.
 2. **Coupure Bluetooth** (lunettes pliées 10 s) → reconnexion auto, « Le buffer est vide ».
 3. **Appel reçu téléphone en poche, prolongé** → la dashcam continue pendant **et au moins 1 min
    après** l'appel (relance du keep-alive à la fin de l'interruption : pas encore exercée, la

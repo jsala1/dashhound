@@ -113,7 +113,7 @@ final class DashcamRecorder {
     resolution = UserDefaults.standard.string(forKey: "resolution").flatMap(VideoResolution.init) ?? .low
     frameRate = FrameRateSetting(rawValue: UInt(UserDefaults.standard.integer(forKey: "frameRate"))) ?? .fps24
     impactDetectionEnabled = UserDefaults.standard.object(forKey: "impactDetection") as? Bool ?? true
-    impactThreshold = ImpactThreshold(rawValue: UserDefaults.standard.double(forKey: "impactThreshold")) ?? .g3
+    impactThreshold = ImpactThreshold(rawValue: UserDefaults.standard.double(forKey: "impactThreshold")) ?? .g12
     ring = RingBuffer(bufferSeconds: 45)
     Self.current = self
     // Live Activity refusée ou retirée en arrière-plan : on la recrée au retour au premier plan.

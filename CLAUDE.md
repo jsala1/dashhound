@@ -195,7 +195,8 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   20 min de trajet**, calibration du seuil sur les pics réels.
   **Mesuré 2026-09-27 (21:03)** : choc simulé en main → déclenché au 1er échantillon (3,5 g, crête
   33 g), un seul déclenchement malgré ~40 secousses, sauvegarde 10,3 s après ; 0 pic ≥ 1,2 g
-  téléphone immobile. Faux positifs (marche, pavés, freinage) : **pas encore mesurés**.
+  téléphone immobile. **Trajet réel 2026-09-28** : à 3 g, **22 faux positifs en 12 min** (1 644 pics,
+  max 9,4 g, 0 ≥ 10 g, téléphone en poche) → **seuil 12 g par défaut**, choix 8/12/16/20 g, bêta.
 
 ## Idées retenues (hors phase en cours)
 

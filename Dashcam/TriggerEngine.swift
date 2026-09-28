@@ -1,7 +1,8 @@
 // Rôle (P1-P2) : sources de déclenchement → sauvegarde du clip (DashcamRecorder.save).
 // P1 : `.manual` (bouton SAUVER). P2 : `.captureButton` (MWDATInputs, `.capture`), `.impact`
 // (MWDATMotion, à venir), `.phoneImpact` (CoreMotion : ‖accélération utilisateur‖ > seuil, debounce
-// 10 s, seuil réglable, log des pics). Seuil initial 3,0 g — hypothèse à calibrer sur trajets réels.
+// 10 s, seuil réglable, log des pics). Seuil 12 g calibré sur le trajet réel du 2026-09-28 (téléphone
+// en poche : 1 644 pics, max 9,4 g, 0 ≥ 10 g ; à 3 g → 22 faux positifs en 12 min).
 import CoreMotion
 import Foundation
 import os
@@ -21,9 +22,10 @@ enum TriggerSource: String, Sendable {
   case phoneImpact = "choc (téléphone)"
 }
 
-/// Seuils proposés dans les réglages (accélération hors gravité, en g).
+/// Seuils proposés dans les réglages (accélération hors gravité, en g). Un ancien réglage absent de
+/// cette liste (2–5 g) retombe sur le défaut, 12 g.
 enum ImpactThreshold: Double, CaseIterable, Identifiable, Sendable {
-  case g2 = 2, g3 = 3, g4 = 4, g5 = 5
+  case g8 = 8, g12 = 12, g16 = 16, g20 = 20
   var id: Double { rawValue }
   var label: String { String(localized: "\(Int(rawValue)) g") }
 }
