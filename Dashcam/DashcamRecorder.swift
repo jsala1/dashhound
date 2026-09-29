@@ -37,6 +37,13 @@ enum VideoResolution: String, CaseIterable, Identifiable, Sendable {
   }
 }
 
+/// Durée du clip sauvé (réglage) ; un choc y ajoute ses 10 s d'après.
+enum ClipLength: Int, CaseIterable, Identifiable, Sendable {
+  case s30 = 30, s45 = 45, s120 = 120
+  var id: Int { rawValue }
+  var label: String { String(localized: "\(rawValue) s") }
+}
+
 /// Débit d'images demandé au SDK (valeurs acceptées : 2, 7, 15, 24, 30). 15 et 7 servent à tester si
 /// la musique Bluetooth revient quand le flux vidéo laisse de la place (bug #256, 2026-09-27).
 enum FrameRateSetting: UInt, CaseIterable, Identifiable, Sendable {
@@ -68,7 +75,16 @@ final class DashcamRecorder {
   }
   /// On attend ce délai après un choc avant de sauver : le clip contient aussi l'« après ».
   let impactPostRoll: TimeInterval = 10
-  let bufferSeconds: TimeInterval = 45
+  var clipLength: ClipLength {
+    didSet {
+      UserDefaults.standard.set(clipLength.rawValue, forKey: "clipLength")
+      ring.bufferSeconds = bufferSeconds
+    }
+  }
+  /// Secondes gardées en mémoire = durée du clip + l'« après » d'un choc.
+  var bufferSeconds: TimeInterval { TimeInterval(clipLength.rawValue) + impactPostRoll }
+  /// Début de la dashcam (chrono affiché), conservé pendant les coupures.
+  private(set) var dashcamStartedAt: Date?
 
   // MARK: - État exposé à l'UI
 
@@ -120,7 +136,9 @@ final class DashcamRecorder {
     frameRate = .fps24
     impactDetectionEnabled = UserDefaults.standard.object(forKey: "impactDetection") as? Bool ?? true
     impactThreshold = ImpactThreshold(rawValue: UserDefaults.standard.double(forKey: "impactThreshold")) ?? .g16
-    ring = RingBuffer(bufferSeconds: 45)
+    let length = ClipLength(rawValue: UserDefaults.standard.integer(forKey: "clipLength")) ?? .s45
+    clipLength = length
+    ring = RingBuffer(bufferSeconds: TimeInterval(length.rawValue) + 10)
     Self.current = self
     // Live Activity refusée ou retirée en arrière-plan : on la recrée au retour au premier plan.
     foregroundObserver = NotificationCenter.default.addObserver(
@@ -138,7 +156,10 @@ final class DashcamRecorder {
   func streamDidStart(glassesName: String?, streamAudio: Bool) {
     guard !isActive else { return }
     isActive = true
-    if !isDashcamOn { ring.clear() }  // vrai démarrage ; après une coupure on garde la mémoire
+    if !isDashcamOn {  // vrai démarrage ; après une coupure on garde la mémoire et le chrono
+      ring.clear()
+      dashcamStartedAt = Date()
+    }
     isDashcamOn = true
     timeline.startSegment()
     switch audioSource {
@@ -157,7 +178,7 @@ final class DashcamRecorder {
     }
     // Après le HFP (qui fixe la catégorie playAndRecord), sinon catégorie playback + mix.
     keepAlive.start()
-    liveActivity.start(target: Int(bufferSeconds))
+    liveActivity.start(target: clipLength.rawValue, startedAt: dashcamStartedAt ?? Date())
     if impactDetectionEnabled, !impactDetector.isRunning {
       impactDetector.start(threshold: impactThreshold.rawValue) { [weak self] g in
         Task { @MainActor in self?.impactDetected(g) }
@@ -190,6 +211,7 @@ final class DashcamRecorder {
       updateLiveActivity()
     } else {
       isDashcamOn = false
+      dashcamStartedAt = nil
       isPausedByGlasses = false
       impactDetector.stop()
       uiTask?.cancel()
@@ -220,7 +242,7 @@ final class DashcamRecorder {
 
   private func updateLiveActivity() {
     liveActivity.update(
-      secondsInMemory: availableSeconds, target: Int(bufferSeconds), lastClipAt: lastClip?.date, isSaving: isSaving,
+      secondsInMemory: 0, target: clipLength.rawValue, lastClipAt: lastClip?.date, isSaving: isSaving,
       isPaused: isPausedByGlasses || isInterrupted)
   }
 
@@ -268,7 +290,7 @@ final class DashcamRecorder {
     Task { [weak self] in
       guard let self else { return }
       try? await Task.sleep(for: .seconds(self.impactPostRoll))
-      if self.isDashcamOn { await self.save(trigger: .phoneImpact) }
+      if self.isDashcamOn { await self.save(trigger: .phoneImpact, extraSeconds: self.impactPostRoll) }
       self.impactPending = false
     }
   }
@@ -277,12 +299,13 @@ final class DashcamRecorder {
 
   /// Renvoie `true` si un clip a été écrit.
   @discardableResult
-  func save(trigger: TriggerSource) async -> Bool {
+  func save(trigger: TriggerSource, extraSeconds: TimeInterval = 0) async -> Bool {
     guard !isSaving else { return false }
     let now = CACurrentMediaTime()
     // Pendant une coupure, « les 45 dernières secondes » sont celles d'avant la coupure.
     let reference = isActive ? now : (ring.lastVideoHostTime ?? now)
-    guard let snapshot = ring.snapshot(seconds: bufferSeconds, now: reference) else {
+    let seconds = TimeInterval(clipLength.rawValue) + extraSeconds
+    guard let snapshot = ring.snapshot(seconds: seconds, now: reference) else {
       errorMessage = String(localized: "Rien en mémoire à sauver pour l'instant.")
       return false
     }

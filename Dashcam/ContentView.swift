@@ -18,14 +18,6 @@ struct ContentView: View {
           VStack(spacing: 16) {
             MascotCard(state: model.dashhoundState)
               .animation(.easeInOut(duration: 0.25), value: model.dashhoundState)
-            if recorder.isActive {
-              ProgressView(value: Double(recorder.availableSeconds), total: recorder.bufferSeconds)
-                .tint(Palette.hound)
-                .background(Palette.houndSoft, in: Capsule())
-                .animation(.linear(duration: 1), value: recorder.availableSeconds)
-                .accessibilityLabel("Mémoire")
-                .accessibilityValue("\(recorder.availableSeconds) secondes sur \(Int(recorder.bufferSeconds))")
-            }
           }
           .padding(.vertical, 8)
         }
@@ -100,7 +92,8 @@ struct ContentView: View {
   private var primaryAction: PrimaryAction? {
     if !model.isRegistered { return .connect }
     if model.sessionState == .started, !model.isCameraGranted { return .allowCamera }
-    guard recorder.isActive, recorder.availableSeconds > 0 else { return nil }
+    // Actif pendant une coupure aussi : on sauve ce qui a été filmé avant.
+    guard recorder.isDashcamOn, recorder.availableSeconds > 0 else { return nil }
     return .save(recorder.availableSeconds)
   }
 
@@ -111,7 +104,7 @@ struct ContentView: View {
     case .allowCamera:
       primaryStyle(Text("Autoriser la caméra…")) { confirmCameraRedirect = true }
     case .save(let seconds):
-      primaryStyle(recorder.isSaving ? Text("Sauvegarde…") : Text("Sauver les \(min(seconds, Int(recorder.bufferSeconds))) s")) {
+      primaryStyle(recorder.isSaving ? Text("Sauvegarde…") : Text("Sauver le clip")) {
         UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         Task { await recorder.save(trigger: .manual) }
       }
@@ -233,6 +226,15 @@ private struct SettingsView: View {
           Text("Choc (iPhone) — bêta")
         } footer: {
           Text("Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. En test : sur un vrai trajet, téléphone en poche, les nids-de-poule montent jusqu'à ~9 g — d'où 12 g par défaut.")
+        }
+        Section {
+          Picker("Durée du clip", selection: $recorder.clipLength) {
+            ForEach(ClipLength.allCases) { Text($0.label).tag($0) }
+          }
+        } header: {
+          Text("Clip")
+        } footer: {
+          Text("Un clip sauve ce qui a été filmé, jusqu'à cette durée. Après un choc, 10 s de plus.")
         }
         Section("Image") {
           Picker("Résolution", selection: $recorder.resolution) {

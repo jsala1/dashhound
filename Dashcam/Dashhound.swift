@@ -26,10 +26,9 @@ enum DashhoundState: Equatable {
   case onboarding
   /// Recherche des lunettes, session en cours de démarrage.
   case searching
-  /// Veille active, buffer en cours de remplissage.
-  case watching(seconds: Int, target: Int)
-  /// Buffer plein : `seconds` disponibles.
-  case ready(seconds: Int)
+  /// Dashcam en marche : chrono depuis le démarrage (la mémoire, elle, ne s'affiche pas — un clip
+  /// sauve toujours ce qui est disponible, jusqu'à la durée réglée).
+  case recording(since: Date)
   /// Clip sauvé (bouton, choc, bouton des lunettes).
   case saved
   /// Lunettes en pause après un tap sur la branche : clip sauvé, mais plus de film jusqu'au tap suivant.
@@ -57,8 +56,8 @@ enum DashhoundState: Equatable {
     switch self {
     case .onboarding: "dashhound-hero-run"
     case .searching: "dashhound-sniff"
-    case .watching: "dashhound-sit-alert"
-    case .ready, .impactDetected: "dashhound-face-alert"
+    case .recording: "dashhound-sit-alert"
+    case .impactDetected: "dashhound-face-alert"
     case .saved, .pausedByGlasses: "dashhound-look-back"
     case .resting: "dashhound-play-bow"
     case .disconnected, .missingPermission, .glassesBusy: "dashhound-face-curious"
@@ -76,8 +75,7 @@ enum DashhoundState: Equatable {
     switch self {
     case .onboarding: String(localized: "Salut, moi c'est Dashhound.")
     case .searching: String(localized: "Je cherche tes lunettes…")
-    case .watching: String(localized: "Je regarde.")
-    case .ready(let seconds): String(localized: "\(seconds) s en mémoire.")
+    case .recording: String(localized: "Je regarde.")
     case .saved: String(localized: "Sauvé !")
     case .pausedByGlasses: String(localized: "Sauvé. Je reprends dans un instant.")
     case .impactDetected: String(localized: "Choc détecté ! Je sauve dans un instant.")
@@ -94,8 +92,6 @@ enum DashhoundState: Equatable {
   /// Le chiffre, toujours affiché quand il existe (secondes en mémoire, batterie).
   var figure: String? {
     switch self {
-    case .watching(let seconds, let target): "\(seconds) / \(target) s"
-    case .ready(let seconds): "\(seconds) s"
     case .tired(let battery, _): battery.map { "\($0) %" }
     default: nil
     }
@@ -131,11 +127,7 @@ extension WearablesModel {
     if recorder.impactPending { return .impactDetected }
     if recorder.isPausedByGlasses || streamState == .paused || sessionState == .paused { return .pausedByGlasses }
     if recorder.justSaved { return .saved }
-    if recorder.isActive {
-      let target = Int(recorder.bufferSeconds)
-      return recorder.availableSeconds >= target
-        ? .ready(seconds: target) : .watching(seconds: recorder.availableSeconds, target: target)
-    }
+    if recorder.isActive { return .recording(since: recorder.dashcamStartedAt ?? Date()) }
     if recorder.isInterrupted { return .glassesBusy }
     if sessionState == .starting || streamState == .starting || streamState == .waitingForDevice { return .searching }
     return .resting
@@ -161,7 +153,12 @@ struct MascotCard: View {
         .foregroundStyle(Palette.ink)
         .multilineTextAlignment(.center)
 
-      if let figure = state.figure {
+      if case .recording(let since) = state {
+        Text(since, style: .timer)
+          .font(.largeTitle.bold().monospacedDigit())
+          .foregroundStyle(Palette.ink)
+          .accessibilityLabel(Text("Durée d'enregistrement"))
+      } else if let figure = state.figure {
         Text(figure)
           .font(.largeTitle.bold().monospacedDigit())
           .foregroundStyle(Palette.ink)
@@ -194,7 +191,7 @@ struct MascotCard: View {
 
 #Preview("Tous les états") {
   let states: [DashhoundState] = [
-    .onboarding, .searching, .watching(seconds: 32, target: 45), .ready(seconds: 45), .saved,
+    .onboarding, .searching, .recording(since: Date().addingTimeInterval(-754)), .saved,
     .resting, .disconnected(memoryKept: true), .glassesBusy, .tired(battery: 12, isHot: false), .missingPermission, .exported, .about,
   ]
   ScrollView {

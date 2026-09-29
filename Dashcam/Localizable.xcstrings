@@ -11,12 +11,12 @@
         }
       }
     },
-    "%lld s en mémoire.": {
+    "%lld s": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld s in memory."
+            "value": "%lld s"
           }
         }
       }
@@ -33,22 +33,6 @@
           "stringUnit": {
             "state": "new",
             "value": "%1$lld s · %2$@"
-          }
-        }
-      }
-    },
-    "%lld secondes sur %lld": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld seconds out of %lld"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$lld secondes sur %2$lld"
           }
         }
       }
@@ -203,6 +187,16 @@
         }
       }
     },
+    "Clip": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clip"
+          }
+        }
+      }
+    },
     "Clip gardé dans l'app, mais pas dans Photos : %@": {
       "localizations": {
         "en": {
@@ -299,6 +293,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Last clip"
+          }
+        }
+      }
+    },
+    "Durée d'enregistrement": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording time"
+          }
+        }
+      }
+    },
+    "Durée du clip": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clip length"
           }
         }
       }
@@ -573,16 +587,6 @@
         }
       }
     },
-    "Mémoire": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Memory"
-          }
-        }
-      }
-    },
     "OK": {
       "localizations": {
         "en": {
@@ -683,12 +687,12 @@
         }
       }
     },
-    "Sauve les 45 dernières secondes de la dashcam dans Photos.": {
+    "Sauve le dernier clip de la dashcam dans Photos.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saves the last 45 seconds of the dashcam to Photos."
+            "value": "Saves the latest dashcam clip to Photos."
           }
         }
       }
@@ -703,22 +707,12 @@
         }
       }
     },
-    "Sauver les %lld s": {
+    "Sauver le clip": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Save the last %lld s"
-          }
-        }
-      }
-    },
-    "Sauver les 45 s": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save the last 45 s"
+            "value": "Save clip"
           }
         }
       }
@@ -839,6 +833,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "An impact saves automatically, 10 s later: about 35 s before and 10 s after. In testing: on a real ride with the phone in a pocket, potholes reach ~9 g — hence 12 g by default."
+          }
+        }
+      }
+    },
+    "Un clip sauve ce qui a été filmé, jusqu'à cette durée. Après un choc, 10 s de plus.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A clip saves what was filmed, up to this length. After an impact, 10 s more."
           }
         }
       }

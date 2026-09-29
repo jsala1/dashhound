@@ -20,10 +20,12 @@ final class LiveActivityController {
   /// La dashcam tourne mais la Live Activity n'a pas pu être (re)créée : à refaire au premier plan.
   private(set) var needsStart = false
   private var target = 45
+  private var startedAt = Date()
   private let log = Logger(subsystem: "com.julian.glassesdashcam", category: "LiveActivity")
 
-  func start(target: Int) {
+  func start(target: Int, startedAt: Date) {
     self.target = target
+    self.startedAt = startedAt
     if let activity, activity.activityState == .active {
       needsStart = false
       return
@@ -43,7 +45,7 @@ final class LiveActivityController {
       secondsInMemory: 0, targetSeconds: target, lastClipAt: nil, isSaving: false)
     do {
       let newActivity = try Activity.request(
-        attributes: DashcamActivityAttributes(startedAt: Date()),
+        attributes: DashcamActivityAttributes(startedAt: startedAt),
         content: ActivityContent(state: state, staleDate: nil))
       activity = newActivity
       lastState = state
@@ -60,7 +62,7 @@ final class LiveActivityController {
   /// À appeler quand l'app revient au premier plan.
   func retryIfNeeded() {
     guard needsStart else { return }
-    start(target: target)
+    start(target: target, startedAt: startedAt)
   }
 
   func update(secondsInMemory: Int, target: Int, lastClipAt: Date?, isSaving: Bool, isPaused: Bool) {

@@ -25,7 +25,12 @@ struct ClipSnapshot: @unchecked Sendable {
 }
 
 final class RingBuffer: @unchecked Sendable {
-  let bufferSeconds: TimeInterval
+  /// Durée gardée en mémoire (réglage : 30, 45 ou 120 s), modifiable à chaud.
+  var bufferSeconds: TimeInterval {
+    get { lock.withLock { seconds } }
+    set { lock.withLock { seconds = newValue } }
+  }
+  private var seconds: TimeInterval
   /// Marge conservée au-delà de `bufferSeconds` pour toujours trouver une keyframe en amont (GOP ≈ 3 s).
   let margin: TimeInterval
 
@@ -34,7 +39,7 @@ final class RingBuffer: @unchecked Sendable {
   private var audio: [BufferedSample] = []
 
   init(bufferSeconds: TimeInterval = 45, margin: TimeInterval = 15) {
-    self.bufferSeconds = bufferSeconds
+    self.seconds = bufferSeconds
     self.margin = margin
   }
 
@@ -73,7 +78,7 @@ final class RingBuffer: @unchecked Sendable {
   func availableSeconds(now: TimeInterval) -> TimeInterval {
     lock.withLock {
       guard let firstKey = video.first(where: \.isKeyframe) else { return 0 }
-      return min(max(now - firstKey.hostTime, 0), bufferSeconds)
+      return min(max(now - firstKey.hostTime, 0), seconds)
     }
   }
 
@@ -95,7 +100,7 @@ final class RingBuffer: @unchecked Sendable {
   }
 
   private func evict(now: TimeInterval) {
-    let limit = now - (bufferSeconds + margin)
+    let limit = now - (seconds + margin)
     if let keep = video.firstIndex(where: { $0.hostTime >= limit }) {
       if keep > 0 { video.removeFirst(keep) }
     } else {

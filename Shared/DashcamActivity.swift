@@ -22,8 +22,8 @@ struct DashcamActivityAttributes: ActivityAttributes {
 /// Bouton « Sauver » de la Live Activity : exécuté dans le processus de l'app (qui tourne, sinon
 /// il n'y a pas de Live Activity).
 struct SaveClipIntent: LiveActivityIntent {
-  static let title: LocalizedStringResource = "Sauver les 45 s"
-  static let description = IntentDescription("Sauve les 45 dernières secondes de la dashcam dans Photos.")
+  static let title: LocalizedStringResource = "Sauver le clip"
+  static let description = IntentDescription("Sauve le dernier clip de la dashcam dans Photos.")
 
   init() {}
 

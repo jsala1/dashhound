@@ -23,7 +23,7 @@ private enum Tone {
 struct DashhoundLiveActivity: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: DashcamActivityAttributes.self) { context in
-      LockScreenView(state: context.state)
+      LockScreenView(state: context.state, startedAt: context.attributes.startedAt)
         .activityBackgroundTint(Tone.paper)
         .activitySystemActionForegroundColor(Tone.ink)
     } dynamicIsland: { context in
@@ -33,10 +33,11 @@ struct DashhoundLiveActivity: Widget {
             .frame(width: 44, height: 44).clipShape(RoundedRectangle(cornerRadius: 10))
         }
         DynamicIslandExpandedRegion(.trailing) {
-          Text("\(context.state.secondsInMemory) s").font(.title3.bold().monospacedDigit())
+          Text(context.attributes.startedAt, style: .timer).font(.title3.bold().monospacedDigit())
+            .multilineTextAlignment(.trailing)
         }
         DynamicIslandExpandedRegion(.center) {
-          Text(memoryLine(context.state)).font(.headline)
+          Text(statusLine(context.state)).font(.headline)
         }
         DynamicIslandExpandedRegion(.bottom) {
           SaveButton(state: context.state)
@@ -44,7 +45,7 @@ struct DashhoundLiveActivity: Widget {
       } compactLeading: {
         Circle().fill(Tone.led).frame(width: 8, height: 8)
       } compactTrailing: {
-        Text("\(context.state.secondsInMemory)s").monospacedDigit()
+        Text(context.attributes.startedAt, style: .timer).monospacedDigit().frame(maxWidth: 56)
       } minimal: {
         Circle().fill(Tone.led).frame(width: 8, height: 8)
       }
@@ -52,15 +53,13 @@ struct DashhoundLiveActivity: Widget {
   }
 }
 
-private func memoryLine(_ state: DashcamActivityAttributes.ContentState) -> String {
-  if state.isPaused { return String(localized: "Reprise automatique…") }
-  return state.secondsInMemory >= state.targetSeconds
-    ? String(localized: "\(state.targetSeconds) s en mémoire")
-    : String(localized: "Je regarde · \(state.secondsInMemory) / \(state.targetSeconds) s")
+private func statusLine(_ state: DashcamActivityAttributes.ContentState) -> String {
+  state.isPaused ? String(localized: "Reprise automatique…") : String(localized: "Je regarde")
 }
 
 private struct LockScreenView: View {
   let state: DashcamActivityAttributes.ContentState
+  let startedAt: Date
 
   var body: some View {
     HStack(spacing: 12) {
@@ -72,7 +71,11 @@ private struct LockScreenView: View {
           Circle().fill(Tone.led).frame(width: 8, height: 8)
           Text("Dashhound regarde").font(.headline).foregroundStyle(Tone.ink)
         }
-        Text(memoryLine(state)).font(.subheadline.monospacedDigit()).foregroundStyle(Tone.ink)
+        HStack(spacing: 6) {
+          Text(statusLine(state))
+          Text(startedAt, style: .timer).monospacedDigit()
+        }
+        .font(.subheadline).foregroundStyle(Tone.ink)
         if let last = state.lastClipAt {
           Text("Dernier clip à \(last.formatted(date: .omitted, time: .shortened))")
             .font(.caption).foregroundStyle(Tone.inkMuted)
@@ -98,6 +101,6 @@ private struct SaveButton: View {
         .background(Tone.hound, in: Capsule())
     }
     .buttonStyle(.plain)
-    .disabled(state.secondsInMemory == 0 || state.isSaving)
+    .disabled(state.isSaving)
   }
 }

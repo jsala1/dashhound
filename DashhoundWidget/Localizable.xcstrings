@@ -1,36 +1,6 @@
 {
   "sourceLanguage": "fr",
   "strings": {
-    "%lld s": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld s"
-          }
-        }
-      }
-    },
-    "%lld s en mémoire": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld s in memory"
-          }
-        }
-      }
-    },
-    "%llds": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%llds"
-          }
-        }
-      }
-    },
     "Dashhound regarde": {
       "localizations": {
         "en": {
@@ -51,18 +21,12 @@
         }
       }
     },
-    "Je regarde · %lld / %lld s": {
+    "Je regarde": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Watching · %lld / %lld s"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Je regarde · %1$lld / %2$lld s"
+            "value": "Watching"
           }
         }
       }
@@ -77,12 +41,12 @@
         }
       }
     },
-    "Sauve les 45 dernières secondes de la dashcam dans Photos.": {
+    "Sauve le dernier clip de la dashcam dans Photos.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saves the last 45 seconds of the dashcam to Photos."
+            "value": "Saves the latest dashcam clip to Photos."
           }
         }
       }
@@ -97,12 +61,12 @@
         }
       }
     },
-    "Sauver les 45 s": {
+    "Sauver le clip": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Save the last 45 s"
+            "value": "Save clip"
           }
         }
       }
