@@ -180,9 +180,9 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   **Mesuré 2026-09-27** : tap simple + reprise auto = **~4,3 s** de coupure. **Double tap sur la
   branche = `.select(source: .captouch)` remonté à l'app SANS pause du stream** → déclencheur de
   sauvegarde sans coupure (`TriggerSource.glassesDoubleTap`). C'est le geste recommandé.
-  Demande à Meta (tap simple / bouton sans pause + #256) : **facebook/meta-wearables-dat-ios#312**,
-  publiée depuis le compte perso `jsala1` (2026-09-27). Toute publication GitHub du projet part de
-  `jsala1`, jamais d'un compte professionnel.
+  Demande à Meta (tap simple / bouton sans pause + #256) : **facebook/meta-wearables-dat-ios#312**
+  (2026-09-27).
+  Le projet est publié depuis le compte jsala1.
   **Mesuré 2026-09-27 (18:33)** : l'**appui long** sur le bouton de capture remonte `capture(.hold)`
   stream encore actif, puis les lunettes prennent la caméra (enregistrement natif) → Dashhound sauve
   les 45 s sur `.hold`, puis le garde-fou (3 reprises / 60 s) l'arrête proprement avec un message.
