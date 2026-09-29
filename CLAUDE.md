@@ -216,6 +216,21 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   Bluetooth est confirmé comme limite : compte Apple Developer payant (99 $/an) pour l'entitlement
   Hotspot / transport Wi-Fi — **seulement sur accord explicite de Julian** (dépense).
 
+## Tests en attente (à jour 2026-09-29)
+
+Faire avant de clore la P1 ; journal au retour : `scripts/collect_logs.sh "AAAA-MM-JJ HH:MM"`.
+
+1. **Choc à 16 g en roulant** : trajet ≥ 20 min, téléphone en poche → **0 faux positif** exigé ;
+   noter les pics max (réglable par l'utilisateur, donc non bloquant pour publier).
+2. **Définition 720×1280 (expérimental)** : ≥ 10 min écran verrouillé, 2–3 double taps → définition
+   réellement reçue, fps, batterie. Si les lunettes redescendent presque tout le temps → décider
+   (Julian) du compte Apple payant pour le Wi-Fi.
+3. **Musique via AirPods** : AirPods connectés, dashcam en marche, Spotify → la musique joue-t-elle
+   pendant que les lunettes filment ?
+4. **« Hey Meta, lance Dashhound »** : dès que Meta ouvre Voice Invocations (#311).
+5. **Appel reçu téléphone en poche** avec la version « reprise immédiate » (vérifié au bureau le
+   29/09 : reprise 4,4 s après libération du micro).
+
 ## Idées retenues (hors phase en cours)
 
 - **Indicateur sur l'écran verrouillé** (idée Julian 2026-09-25) : Live Activity (ActivityKit) sur
