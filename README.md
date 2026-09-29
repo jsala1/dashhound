@@ -36,7 +36,7 @@ Honest list, updated as we learn. Most come from the glasses platform (Meta deve
 - **No official background mode.** To keep filming with the screen locked, Dashhound plays silence in a loop (inaudible, and it doesn't stop your other apps' audio).
 - **Battery:** a full charge of the glasses lasts roughly **35 to 43 minutes** of dashcam — about one ride.
 - **Impact detection is in beta.** The threshold (**16 g by default**, adjustable) comes from real rides with the phone in a pocket, where potholes reached 9–14 g; it may miss an event or trigger when it shouldn't.
-- **Video is 360×640** at 24 fps: at higher resolution the glasses drop quality on their own.
+- **Video is 360×640** at 24 fps by default. 504×896 and 720×1280 (experimental) are in the settings, but over Bluetooth the glasses lower the resolution on their own when the link is busy (measured at 504×896: back to 360×640 and ~15 fps 22 % of the time). When that happens, Dashhound restarts its memory so a clip never mixes two resolutions.
 - **Not on the App Store.** Meta's toolkit is in developer preview: you build and install Dashhound yourself with Xcode, and with a free Apple account the app must be re-installed **every 7 days**.
 - **"Hey Meta, start Dashhound"** is wired in the app but can't be enabled yet: Voice Invocations is not available in Meta's Developer Center ([#311](https://github.com/facebook/meta-wearables-dat-ios/issues/311)).
 - iPhone only. Tested with one pair of Ray-Ban Meta glasses and iOS 27.

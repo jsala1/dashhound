@@ -47,6 +47,16 @@
         }
       }
     },
+    "720 × 1280 (expérimental)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "720 × 1280 (experimental)"
+          }
+        }
+      }
+    },
     "Accès à Photos refusé": {
       "localizations": {
         "en": {

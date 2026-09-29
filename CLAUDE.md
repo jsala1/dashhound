@@ -210,6 +210,12 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   caméra : pas de vidéo possible (limite Meta), mais un choc sauve les 45 s d'avant l'appel ; le son
   reste coupé pendant tout appel (décision légale).
 
+- **2026-09-29 — définition 720×1280 en option expérimentale** (décision Julian) + mémoire remise à
+  zéro à tout changement de définition reçue (un clip passthrough ne doit jamais mélanger deux
+  définitions) ; définition réelle loggée dans chaque fenêtre `[P1]`. À mesurer sur un trajet. Si le
+  Bluetooth est confirmé comme limite : compte Apple Developer payant (99 $/an) pour l'entitlement
+  Hotspot / transport Wi-Fi — **seulement sur accord explicite de Julian** (dépense).
+
 ## Idées retenues (hors phase en cours)
 
 - **Indicateur sur l'écran verrouillé** (idée Julian 2026-09-25) : Live Activity (ActivityKit) sur

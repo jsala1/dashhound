@@ -21,18 +21,21 @@ enum AudioSource: String, CaseIterable, Identifiable, Sendable {
 }
 
 enum VideoResolution: String, CaseIterable, Identifiable, Sendable {
-  case low, medium
+  case low, medium, high
   var id: String { rawValue }
   var label: String {
     switch self {
     case .low: "360 × 640"
     case .medium: "504 × 896"
+    // En Bluetooth, les lunettes redescendent seules sous forte charge (mesuré en 504×896) : à valider.
+    case .high: String(localized: "720 × 1280 (expérimental)")
     }
   }
   var sdk: StreamingResolution {
     switch self {
     case .low: .low
     case .medium: .medium
+    case .high: .high
     }
   }
 }
@@ -115,6 +118,7 @@ final class DashcamRecorder {
   nonisolated let calls = CallMonitor()
   nonisolated private let telemetry = Telemetry()
   nonisolated private let timeline = MediaTimeline()
+  nonisolated private let formatTracker = FormatTracker()
 
   /// Instance vivante, pour le bouton Sauver de la Live Activity (SaveClipIntent).
   static weak var current: DashcamRecorder?
@@ -260,6 +264,13 @@ final class DashcamRecorder {
     let mapped = timeline.mapVideo(pts: sourcePTS.seconds, arrival: now)
     guard let retimed = sample.retimed(presentation: mapped) else { return }
     let isKeyframe = sample.isHEVCKeyframe()
+    // Définition changée (les lunettes redescendent seules, ou reprise dans une autre définition) :
+    // la mémoire repart d'ici — un clip ne mélange jamais deux définitions (fichier illisible sinon).
+    let dims = CMSampleBufferGetFormatDescription(sample).map(CMVideoFormatDescriptionGetDimensions)
+    if let dims, let previous = formatTracker.update(width: dims.width, height: dims.height) {
+      ring.clear()
+      telemetry.formatChanged(from: previous, to: (dims.width, dims.height))
+    }
     ring.appendVideo(retimed, isKeyframe: isKeyframe, hostTime: now)
     telemetry.video(sample, isKeyframe: isKeyframe, now: now, ring: ring)
   }
@@ -349,6 +360,22 @@ final class DashcamRecorder {
       errorMessage = error.localizedDescription
       log.error("[P1] échec du clip : \(error.localizedDescription, privacy: .public)")
       return false
+    }
+  }
+}
+
+// MARK: - Définition reçue
+
+/// Suit la définition des images reçues ; `update` renvoie l'ancienne quand elle change.
+private final class FormatTracker: @unchecked Sendable {
+  private let lock = NSLock()
+  private var current: (width: Int32, height: Int32)?
+
+  func update(width: Int32, height: Int32) -> (width: Int32, height: Int32)? {
+    lock.withLock {
+      defer { current = (width, height) }
+      guard let current, current.width != width || current.height != height else { return nil }
+      return current
     }
   }
 }
@@ -476,9 +503,14 @@ private final class Telemetry: @unchecked Sendable {
     }
   }
 
+  func formatChanged(from old: (width: Int32, height: Int32), to new: (Int32, Int32)) {
+    log.notice("[P1] DÉFINITION changée \(old.width)x\(old.height) → \(new.0)x\(new.1) — mémoire repartie de zéro")
+  }
+
   func video(_ sample: CMSampleBuffer, isKeyframe: Bool, now: TimeInterval, ring: RingBuffer) {
     var line: String?
     var first: String?
+    let dims = CMSampleBufferGetFormatDescription(sample).map(CMVideoFormatDescriptionGetDimensions)
     lock.withLock {
       if !firstFrameLogged {
         firstFrameLogged = true
@@ -495,9 +527,9 @@ private final class Telemetry: @unchecked Sendable {
         let counts = ring.counts
         let peakDB: Double = audioPeak > 0 ? 20 * log10(Double(audioPeak)) : -120
         line = String(
-          format: "[P1] +%.0fs fps=%.1f keyframes=%ld maxGap=%.0fms audio=%.0f éch/s crête=%.0f dBFS | mémoire=%.0f s (%ld vidéo, %ld audio) | RAM=%.0f Mo",
-          now - startedAt, Double(frames) / elapsed, keyframes, maxGap, Double(audioSamples) / elapsed,
-          peakDB, ring.availableSeconds(now: now), counts.video, counts.audio, Self.footprintMB())
+          format: "[P1] +%.0fs %dx%d fps=%.1f keyframes=%ld maxGap=%.0fms audio=%.0f éch/s crête=%.0f dBFS | mémoire=%.0f s (%ld vidéo, %ld audio) | RAM=%.0f Mo",
+          now - startedAt, dims?.width ?? 0, dims?.height ?? 0, Double(frames) / elapsed, keyframes, maxGap,
+          Double(audioSamples) / elapsed, peakDB, ring.availableSeconds(now: now), counts.video, counts.audio, Self.footprintMB())
         windowStart = now
         frames = 0
         keyframes = 0
