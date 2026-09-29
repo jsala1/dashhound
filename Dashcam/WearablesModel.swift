@@ -131,6 +131,7 @@ final class WearablesModel {
     recorder.calls.onCallEnded = { [weak self] in
       Task { @MainActor in self?.callEnded() }
     }
+    recorder.onGlassesAudioReleased { [weak self] in self?.callEnded() }
   }
 
   isolated deinit {
@@ -263,22 +264,23 @@ final class WearablesModel {
   /// enregistrement lancé depuis les lunettes) : on arrête proprement au lieu de boucler.
   /// La dashcam ne s'arrête jamais d'elle-même (règle Julian) : quand les lunettes sont occupées
   /// (appel WhatsApp, enregistrement lancé depuis les lunettes…), on réessaie de plus en plus
-  /// espacé — 2 s, puis 10 s, puis 30 s — et tout de suite à la fin d'un appel.
+  /// espacé — 2 s, puis 5 s — et tout de suite quand le micro des lunettes est libéré (fin d'appel,
+  /// de message vocal, de dictée : vu le 29/09, ces usages du micro coupent aussi la caméra).
   private func nextRecoveryDelay() -> Duration {
     let now = Date()
     recoveryAttempts = recoveryAttempts.filter { now.timeIntervalSince($0) < 120 }
     recoveryAttempts.append(now)
     switch recoveryAttempts.count {
     case ...3: return .seconds(2)
-    case ...6: return .seconds(10)
-    default: return .seconds(30)
+    default: return .seconds(5)  // une tentative ratée ne coûte presque rien : on reste réactif
     }
   }
 
-  /// Fin d'un appel (WhatsApp, téléphone) : les lunettes redeviennent libres, on relance sans attendre.
+  /// Fin d'un appel ou d'un usage du micro par une autre app : les lunettes redeviennent libres, on
+  /// relance sans attendre.
   private func callEnded() {
     guard wantsSession, session == nil else { return }
-    log.notice("[P1] fin d'appel — reprise immédiate")
+    log.notice("[P1] lunettes libérées (appel / micro) — reprise immédiate")
     recoveryAttempts.removeAll()
     reconnectTask?.cancel()
     reconnectTask = Task { [weak self] in

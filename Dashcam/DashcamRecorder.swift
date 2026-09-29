@@ -224,6 +224,11 @@ final class DashcamRecorder {
     }
   }
 
+  /// Branché par WearablesModel : relance immédiate quand une autre app libère le micro des lunettes.
+  func onGlassesAudioReleased(_ handler: @escaping @MainActor () -> Void) {
+    keepAlive.onAudioReleased = handler
+  }
+
   /// Réglage modifié (résolution…) : on repart d'une mémoire vide — pas de mélange de formats.
   func resetMemory() {
     ring.clear()

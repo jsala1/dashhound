@@ -4,9 +4,9 @@ Dashhound is a retroactive dashcam for Ray-Ban Meta glasses: the glasses stream 
 
 Setup for all measurements: DAT iOS 1.0.0, one pair of Ray-Ban Meta glasses, iPhone 16 Pro on iOS 27, hvc1 360×640 @ 24 fps with PCM audio from the stream, Developer Mode.
 
-## 1. Keep the camera stream during calls
+## 1. Keep the camera stream when another app uses the microphone (calls, voice messages, dictation)
 
-**Today:** starting or receiving a **WhatsApp** call (even just opening WhatsApp, which prepares its call audio) switches the glasses to the hands-free profile and ends the camera session about 1 s later (`Session ended by device`); new sessions fail with `Device unavailable` until the call ends. A regular **phone call** did not stop the stream (measured 27/09).
+**Today:** anything that uses the glasses **microphone** in another app — a WhatsApp call or voice message, iOS dictation, a phone call to voicemail — switches the glasses to the hands-free profile and ends the camera session about 1 s later (`Session ended by device`); new sessions fail with `Device unavailable` until the microphone is released. (One regular phone call on 27/09 kept the stream; a call to voicemail on 29/09 did not.)
 **Why it matters:** a dashcam must keep watching while you are on a call — that is when attention drops.
 **Ask:** keep an active camera stream alive during VoIP calls (the audio side can stay with the call), or at least expose a clear session state/reason ("glasses busy: call") and resume automatically when the call ends.
 

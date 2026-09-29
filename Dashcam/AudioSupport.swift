@@ -24,6 +24,10 @@ final class AudioKeepAlive {
   /// pliées…). Vu le 29/09 : après ces changements, la relance échouait (erreur 'what') et rien ne
   /// réessayait.
   private var watchdog: Task<Void, Never>?
+  /// Appelé quand une autre app libère le micro des lunettes (fin d'interruption audio, sortie du
+  /// mode « mains libres ») : message vocal, dictée, appel… — les lunettes redeviennent disponibles.
+  var onAudioReleased: (@MainActor () -> Void)?
+  private var wasHandsFree = false
 
   init() {
     // Diagnostic cohabitation (musique coupée pendant la dashcam) : interruptions et changements de
@@ -35,7 +39,10 @@ final class AudioKeepAlive {
         let reason = note.userInfo?[AVAudioSessionInterruptionReasonKey] as? UInt
         log.notice("[AUDIO] interruption \(type == .began ? "début" : "fin", privacy: .public) raison=\(reason.map(String.init) ?? "-", privacy: .public)")
         if type == .ended {
-          Task { @MainActor [weak self] in self?.resumeAfterInterruption() }
+          Task { @MainActor [weak self] in
+            self?.resumeAfterInterruption()
+            self?.onAudioReleased?()
+          }
         }
       })
     observers.append(
@@ -48,6 +55,8 @@ final class AudioKeepAlive {
         let reason = note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
         let outputs = AVAudioSession.sharedInstance().currentRoute.outputs.map { "\($0.portType.rawValue)[\($0.portName)]" }
         log.notice("[AUDIO] route raison=\(reason.map(String.init) ?? "-", privacy: .public) sorties=\(outputs.joined(separator: ", "), privacy: .public) autreAudio=\(AVAudioSession.sharedInstance().isOtherAudioPlaying, privacy: .public)")
+        let handsFree = AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .bluetoothHFP }
+        Task { @MainActor [weak self] in self?.routeChanged(handsFree: handsFree) }
       })
     observers.append(
       center.addObserver(forName: AVAudioSession.silenceSecondaryAudioHintNotification, object: nil, queue: nil) { note in
@@ -57,6 +66,15 @@ final class AudioKeepAlive {
   }
 
   var isRunning: Bool { engine?.isRunning ?? false }
+
+  /// Sortie du mode « mains libres » (une autre app a fini d'utiliser le micro) → reprise immédiate.
+  private func routeChanged(handsFree: Bool) {
+    defer { wasHandsFree = handsFree }
+    if wasHandsFree, !handsFree {
+      log.notice("[AUDIO] micro des lunettes libéré — reprise immédiate")
+      onAudioReleased?()
+    }
+  }
 
   private func resumeAfterInterruption() {
     guard wanted, !isRunning else { return }
