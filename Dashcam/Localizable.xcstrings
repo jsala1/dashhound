@@ -837,12 +837,12 @@
         }
       }
     },
-    "Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. En test : sur un vrai trajet, téléphone en poche, les nids-de-poule montent jusqu'à ~9 g — d'où 12 g par défaut.": {
+    "Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. En test : sur un vrai trajet, téléphone en poche, les nids-de-poule montent jusqu'à ~14 g — d'où 16 g par défaut.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "An impact saves automatically, 10 s later: about 35 s before and 10 s after. In testing: on a real ride with the phone in a pocket, potholes reach ~9 g — hence 12 g by default."
+            "value": "An impact saves automatically, 10 s later: about 35 s before and 10 s after. In testing: on a real ride with the phone in a pocket, potholes reach ~14 g — hence 16 g by default."
           }
         }
       }

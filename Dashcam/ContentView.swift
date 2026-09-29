@@ -225,7 +225,7 @@ private struct SettingsView: View {
         } header: {
           Text("Choc (iPhone) — bêta")
         } footer: {
-          Text("Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. En test : sur un vrai trajet, téléphone en poche, les nids-de-poule montent jusqu'à ~9 g — d'où 12 g par défaut.")
+          Text("Un choc sauve automatiquement, 10 s après : environ 35 s avant et 10 s après. En test : sur un vrai trajet, téléphone en poche, les nids-de-poule montent jusqu'à ~14 g — d'où 16 g par défaut.")
         }
         Section {
           Picker("Durée du clip", selection: $recorder.clipLength) {
