@@ -2,7 +2,7 @@
 
 **Proof, 45 seconds early.** A retroactive dashcam for Ray-Ban Meta glasses.
 
-Dashhound keeps the last seconds of what your glasses see in memory — 45 by default — and only saves them when you ask. Double-tap the temple, tap *Save* on your lock screen, or let a hard jolt trigger it. For the next time, it won't be your word against theirs.
+Dashhound keeps the last 45 seconds of what your glasses see in memory (30 to 120, your choice) — and only saves them when you ask. Double-tap the temple, tap *Save* on your lock screen, or let a hard jolt trigger it. For the next time, it won't be your word against theirs.
 
 *It looks back so you don't have to. It keeps. It doesn't watch.*
 
