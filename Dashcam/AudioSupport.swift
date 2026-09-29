@@ -20,6 +20,10 @@ final class AudioKeepAlive {
   /// La dashcam veut le keep-alive : à relancer après une interruption (appel), sinon iOS gèle l'app
   /// écran verrouillé une fois l'appel terminé (vu 2026-09-27 : rien ne le relançait).
   private var wanted = false
+  /// Surveillance : relance le moteur s'il s'est arrêté (changement de route audio, WhatsApp, lunettes
+  /// pliées…). Vu le 29/09 : après ces changements, la relance échouait (erreur 'what') et rien ne
+  /// réessayait.
+  private var watchdog: Task<Void, Never>?
 
   init() {
     // Diagnostic cohabitation (musique coupée pendant la dashcam) : interruptions et changements de
@@ -57,15 +61,30 @@ final class AudioKeepAlive {
   private func resumeAfterInterruption() {
     guard wanted, !isRunning else { return }
     log.notice("keep-alive relancé après interruption")
-    engine?.stop()
-    engine = nil
-    start()
+    startEngine()
   }
 
   func start() {
     wanted = true
+    if watchdog == nil {
+      watchdog = Task { [weak self] in
+        while !Task.isCancelled {
+          try? await Task.sleep(for: .seconds(3))
+          guard let self else { return }
+          if self.wanted, !self.isRunning {
+            log.notice("keep-alive arrêté — relance (surveillance)")
+            self.startEngine()
+          }
+        }
+      }
+    }
+    startEngine()
+  }
+
+  private func startEngine() {
     if isRunning { return }
     engine?.stop()
+    engine = nil
     let session = AVAudioSession.sharedInstance()
     do {
       if session.category != .playAndRecord {
@@ -101,6 +120,8 @@ final class AudioKeepAlive {
 
   func stop() {
     wanted = false
+    watchdog?.cancel()
+    watchdog = nil
     engine?.stop()
     engine = nil
   }
@@ -182,6 +203,13 @@ final class CallMonitor: NSObject, CXCallObserverDelegate, @unchecked Sendable {
   private let observer = CXCallObserver()
   private let lock = NSLock()
   private var onCall = false
+  private var endedHandler: (@Sendable () -> Void)?
+
+  /// Appelé (hors main actor) à la fin d'un appel : les lunettes redeviennent disponibles.
+  var onCallEnded: (@Sendable () -> Void)? {
+    get { lock.withLock { endedHandler } }
+    set { lock.withLock { endedHandler = newValue } }
+  }
   private var callStart: TimeInterval?
   private var intervals: [ClosedRange<TimeInterval>] = []
 
@@ -215,6 +243,7 @@ final class CallMonitor: NSObject, CXCallObserverDelegate, @unchecked Sendable {
       onCall = active
     }
     log.notice("appel \(active ? "en cours — son coupé" : "terminé", privacy: .public)")
+    if !active { onCallEnded?() }
   }
 }
 

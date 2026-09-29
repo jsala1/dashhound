@@ -58,19 +58,12 @@ final class WearablesModel {
   /// Erreur survenue pendant que la dashcam démarre ou reprend : souvent transitoire (une reprise la
   /// règle, ou le garde-fou affichera un diagnostic plus clair). Loggée tout de suite, affichée
   /// seulement si la dashcam ne tourne toujours pas 8 s plus tard — plus d'alertes en cascade.
+  /// Erreur de session/stream. Dashcam en marche : c'est une coupure (appel, WhatsApp, lunettes
+  /// pliées…) que la reprise automatique gère — la mascotte l'affiche, pas d'alerte (une alerte en
+  /// boucle masquait « Arrêter »). Dashcam à l'arrêt : affichée.
   private func reportTransient(_ message: String) {
-    log.error("[P1] erreur (différée) : \(message, privacy: .public)")
-    guard wantsSession else {
-      errorMessage = message
-      return
-    }
-    pendingErrorTask?.cancel()
-    pendingErrorTask = Task { [weak self] in
-      try? await Task.sleep(for: .seconds(8))
-      guard !Task.isCancelled, let self, self.wantsSession, self.streamState != .streaming, self.errorMessage == nil
-      else { return }
-      self.errorMessage = message
-    }
+    log.error("[P1] erreur (coupure) : \(message, privacy: .public)")
+    if !wantsSession { errorMessage = message }
   }
 
   let recorder: DashcamRecorder
@@ -135,6 +128,9 @@ final class WearablesModel {
           self?.activeDeviceChanged(deviceId)
         }
       })
+    recorder.calls.onCallEnded = { [weak self] in
+      Task { @MainActor in self?.callEnded() }
+    }
   }
 
   isolated deinit {
@@ -258,7 +254,6 @@ final class WearablesModel {
       guard !Task.isCancelled, self.wantsSession,
         self.sessionState == .paused || self.streamState == .paused
       else { return }
-      guard self.allowRecoveryAttempt() else { return }
       self.log.notice("[P2] reprise auto : on ferme la session en pause pour en rouvrir une")
       self.session?.stop()
     }
@@ -266,20 +261,31 @@ final class WearablesModel {
 
   /// Au-delà de 3 reprises/reconnexions en 60 s, quelque chose occupe la caméra (typiquement un
   /// enregistrement lancé depuis les lunettes) : on arrête proprement au lieu de boucler.
-  private func allowRecoveryAttempt() -> Bool {
+  /// La dashcam ne s'arrête jamais d'elle-même (règle Julian) : quand les lunettes sont occupées
+  /// (appel WhatsApp, enregistrement lancé depuis les lunettes…), on réessaie de plus en plus
+  /// espacé — 2 s, puis 10 s, puis 30 s — et tout de suite à la fin d'un appel.
+  private func nextRecoveryDelay() -> Duration {
     let now = Date()
-    recoveryAttempts = recoveryAttempts.filter { now.timeIntervalSince($0) < 60 }
-    guard recoveryAttempts.count < 3 else {
-      log.error("[P1] trop de reprises en 60 s — caméra des lunettes probablement occupée, arrêt")
-      recoveryAttempts.removeAll()
-      pendingErrorTask?.cancel()
-      stopSession()
-      errorMessage = String(
-        localized: "La caméra des lunettes est déjà utilisée (un enregistrement lancé depuis les lunettes ?). Arrête-le, puis redémarre la dashcam.")
-      return false
-    }
+    recoveryAttempts = recoveryAttempts.filter { now.timeIntervalSince($0) < 120 }
     recoveryAttempts.append(now)
-    return true
+    switch recoveryAttempts.count {
+    case ...3: return .seconds(2)
+    case ...6: return .seconds(10)
+    default: return .seconds(30)
+    }
+  }
+
+  /// Fin d'un appel (WhatsApp, téléphone) : les lunettes redeviennent libres, on relance sans attendre.
+  private func callEnded() {
+    guard wantsSession, session == nil else { return }
+    log.notice("[P1] fin d'appel — reprise immédiate")
+    recoveryAttempts.removeAll()
+    reconnectTask?.cancel()
+    reconnectTask = Task { [weak self] in
+      try? await Task.sleep(for: .seconds(1))
+      guard !Task.isCancelled, let self, self.wantsSession, self.session == nil else { return }
+      self.startSession()
+    }
   }
 
   /// Reconnexion auto : seulement si l'utilisateur voulait une session et qu'un device est actif.
@@ -287,12 +293,12 @@ final class WearablesModel {
   private func scheduleReconnectIfNeeded() {
     guard wantsSession, session == nil, hasActiveDevice else { return }
     reconnectTask?.cancel()
+    let delay = nextRecoveryDelay()
     reconnectTask = Task { [weak self] in
-      try? await Task.sleep(for: .seconds(2))
+      try? await Task.sleep(for: delay)
       guard !Task.isCancelled, let self, self.wantsSession, self.session == nil, self.hasActiveDevice
       else { return }
-      guard self.allowRecoveryAttempt() else { return }
-      self.log.notice("reconnexion auto")
+      self.log.notice("reconnexion auto (après \(String(describing: delay), privacy: .public))")
       self.startSession()
     }
   }
@@ -346,6 +352,7 @@ final class WearablesModel {
 
   /// Relance le stream pour appliquer un réglage (audio, résolution) : le buffer repart de zéro.
   func restartStream() {
+    recorder.resetMemory()
     guard let camera else {
       startStreamIfReady()
       return

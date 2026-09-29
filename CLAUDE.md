@@ -198,6 +198,18 @@ Décisions par défaut (modifiables dans l'app) : **45 s** (décision Julian 202
   téléphone immobile. **Trajet réel 2026-09-28** : à 3 g, **22 faux positifs en 12 min** (1 644 pics,
   max 9,4 g, 0 ≥ 10 g, téléphone en poche) → **seuil 12 g par défaut**, choix 8/12/16/20 g, bêta.
 
+- **2026-09-29 — la dashcam ne s'arrête jamais d'elle-même** (trajet du 29/09 : WhatsApp met les
+  lunettes en mode appel → « Session ended by device », puis « Device unavailable » ; mon garde-fou
+  « 3 reprises / 60 s » arrêtait la dashcam et affichait à tort « caméra déjà utilisée »). Désormais :
+  relances 2 s → 10 s → 30 s, relance immédiate à la fin d'un appel (CallKit), erreurs de coupure en
+  log seulement ; **mémoire conservée pendant les coupures** (horloge commune : PTS de chaque session
+  recalés sur l'heure iPhone ; trous audio comblés de silence — sinon 20 s de décalage son/image,
+  vu en test hors iPhone) ; détection de choc active pendant les coupures ; keep-alive surveillé
+  toutes les 3 s (il ne redémarrait pas après un changement de route audio). Seuil choc 16 g
+  (2 déclenchements à 12,7 et 13,7 g en roulant). Pendant un appel WhatsApp, les lunettes refusent la
+  caméra : pas de vidéo possible (limite Meta), mais un choc sauve les 45 s d'avant l'appel ; le son
+  reste coupé pendant tout appel (décision légale).
+
 ## Idées retenues (hors phase en cours)
 
 - **Indicateur sur l'écran verrouillé** (idée Julian 2026-09-25) : Live Activity (ActivityKit) sur

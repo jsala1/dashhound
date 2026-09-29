@@ -423,6 +423,26 @@
         }
       }
     },
+    "Je garde ce que j'ai vu, je reprends dès leur retour.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm keeping what I saw — back as soon as they are."
+          }
+        }
+      }
+    },
+    "Je garde ce que j'ai vu, je reprends dès qu'elles sont libres.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm keeping what I saw — back as soon as they're free."
+          }
+        }
+      }
+    },
     "Je m'étire.": {
       "localizations": {
         "en": {
@@ -473,16 +493,6 @@
         }
       }
     },
-    "La caméra des lunettes est déjà utilisée (un enregistrement lancé depuis les lunettes ?). Arrête-le, puis redémarre la dashcam.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The glasses camera is already in use (a recording started from the glasses?). Stop it, then restart the dashcam."
-          }
-        }
-      }
-    },
     "Le buffer est vide.": {
       "localizations": {
         "en": {
@@ -499,6 +509,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sound is muted during a call: conversations are never recorded."
+          }
+        }
+      }
+    },
+    "Les lunettes sont occupées (un appel ?).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The glasses are busy (a call?)."
           }
         }
       }

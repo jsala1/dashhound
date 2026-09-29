@@ -19,6 +19,17 @@ après le trajet. Mesures ci-dessous : logs `[P1]` / `[P2]` de l'app et analyse 
 | Écran | **jamais verrouillé** pendant ce trajet (aucun événement de verrouillage) → le cas « poche, écran verrouillé » reste à valider sur trajet |
 | Appel | l'appel de 19:10:40 a eu lieu **après** l'arrêt de la dashcam → non testé en roulant |
 
+## Trajet du 2026-09-29 (journal iPhone, 17:02 → 17:19)
+
+| Point | Mesure |
+|---|---|
+| **Poche, écran verrouillé** | ✅ 7 min 14 s verrouillé d'affilée, stream continu ; double tap → clip 45,9 s |
+| **Coupure Bluetooth** (lunettes pliées) | ✅ « hinges closed » → reconnexion auto en 5,7 s, film reparti à 8 s |
+| **Batterie** | 86 → 63 % en 8,2 min écran verrouillé = **2,8 %/min ⇒ ~35 min** depuis une charge pleine |
+| **WhatsApp** | ❌ l'ouvrir / appeler met les lunettes en mode appel → caméra coupée par les lunettes ; le garde-fou arrêtait alors la dashcam → **corrigé** (relances patientes, reprise à la fin d'appel, mémoire gardée) |
+| Détection de choc à 12 g | 2 déclenchements (12,7 et 13,7 g) → seuil **16 g** |
+| Appel | WhatsApp : vidéo impossible pendant l'appel (limite Meta) ; appel téléphonique (27/09) : vidéo maintenue |
+
 ## Ce qui marche (mesuré)
 
 | Point | Mesure |

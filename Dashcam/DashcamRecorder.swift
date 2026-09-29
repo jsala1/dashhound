@@ -73,6 +73,11 @@ final class DashcamRecorder {
   // MARK: - État exposé à l'UI
 
   private(set) var isActive = false
+  /// La dashcam est en marche (demandée par l'utilisateur), même pendant une coupure du stream
+  /// (appel, lunettes pliées, tap) : la mémoire est gardée et la détection de choc reste active.
+  private(set) var isDashcamOn = false
+  /// Stream coupé mais dashcam en marche : on attend que les lunettes reviennent.
+  var isInterrupted: Bool { isDashcamOn && !isActive }
   private(set) var availableSeconds = 0
   private(set) var isSaving = false
   private(set) var justSaved = false
@@ -93,7 +98,7 @@ final class DashcamRecorder {
   nonisolated let impactDetector = PhoneImpactDetector()
   nonisolated let calls = CallMonitor()
   nonisolated private let telemetry = Telemetry()
-  nonisolated private let clock = VideoClock()
+  nonisolated private let timeline = MediaTimeline()
 
   /// Instance vivante, pour le bouton Sauver de la Live Activity (SaveClipIntent).
   static weak var current: DashcamRecorder?
@@ -114,7 +119,7 @@ final class DashcamRecorder {
     // Réglage de test (musique / #256) retiré de l'écran : toujours 24 fps.
     frameRate = .fps24
     impactDetectionEnabled = UserDefaults.standard.object(forKey: "impactDetection") as? Bool ?? true
-    impactThreshold = ImpactThreshold(rawValue: UserDefaults.standard.double(forKey: "impactThreshold")) ?? .g12
+    impactThreshold = ImpactThreshold(rawValue: UserDefaults.standard.double(forKey: "impactThreshold")) ?? .g16
     ring = RingBuffer(bufferSeconds: 45)
     Self.current = self
     // Live Activity refusée ou retirée en arrière-plan : on la recrée au retour au premier plan.
@@ -133,7 +138,9 @@ final class DashcamRecorder {
   func streamDidStart(glassesName: String?, streamAudio: Bool) {
     guard !isActive else { return }
     isActive = true
-    ring.clear()
+    if !isDashcamOn { ring.clear() }  // vrai démarrage ; après une coupure on garde la mémoire
+    isDashcamOn = true
+    timeline.startSegment()
     switch audioSource {
     case .stream:
       awaitingStreamAudio = streamAudio
@@ -151,17 +158,19 @@ final class DashcamRecorder {
     // Après le HFP (qui fixe la catégorie playAndRecord), sinon catégorie playback + mix.
     keepAlive.start()
     liveActivity.start(target: Int(bufferSeconds))
-    if impactDetectionEnabled {
+    if impactDetectionEnabled, !impactDetector.isRunning {
       impactDetector.start(threshold: impactThreshold.rawValue) { [weak self] g in
         Task { @MainActor in self?.impactDetected(g) }
       }
     }
     telemetry.start(audio: audioSource.rawValue, resolution: "\(resolution.rawValue) @ \(frameRate.rawValue) fps")
     log.notice("[P1] dashcam active — audio=\(self.audioStatus, privacy: .public) résolution=\(self.resolution.rawValue, privacy: .public)")
-    uiTask = Task { [weak self] in
-      while !Task.isCancelled {
-        self?.refresh()
-        try? await Task.sleep(for: .seconds(1))
+    if uiTask == nil {
+      uiTask = Task { [weak self] in
+        while !Task.isCancelled {
+          self?.refresh()
+          try? await Task.sleep(for: .seconds(1))
+        }
       }
     }
   }
@@ -170,26 +179,33 @@ final class DashcamRecorder {
   /// keep-alive (sans lui iOS gèle l'app avant qu'elle puisse relancer la session, écran verrouillé)
   /// et la Live Activity (iOS refuse d'en recréer une en arrière-plan). Sinon, arrêt complet.
   func streamDidStop(dashcamStillWanted: Bool) {
-    impactDetector.stop()
     if isActive {
       isActive = false
+      hfp.stop()
+      telemetry.stop()
+      log.notice("[P1] stream arrêté — mémoire \(dashcamStillWanted ? "conservée" : "vidée", privacy: .public)")
+    }
+    if dashcamStillWanted, isDashcamOn {
+      log.notice("[P1] reprise attendue — mémoire, détection de choc, keep-alive et Live Activity conservés")
+      updateLiveActivity()
+    } else {
+      isDashcamOn = false
+      isPausedByGlasses = false
+      impactDetector.stop()
       uiTask?.cancel()
       uiTask = nil
-      hfp.stop()
       ring.clear()
       availableSeconds = 0
-      telemetry.stop()
-      log.notice("[P1] stream arrêté — buffer vidé")
-    }
-    if dashcamStillWanted {
-      isPausedByGlasses = true
-      log.notice("[P1] reprise attendue — keep-alive et Live Activity conservés")
-    } else {
-      isPausedByGlasses = false
       keepAlive.stop()
       liveActivity.end()
       log.notice("[P1] dashcam arrêtée")
     }
+  }
+
+  /// Réglage modifié (résolution…) : on repart d'une mémoire vide — pas de mélange de formats.
+  func resetMemory() {
+    ring.clear()
+    availableSeconds = 0
   }
 
   private func refresh() {
@@ -205,16 +221,19 @@ final class DashcamRecorder {
   private func updateLiveActivity() {
     liveActivity.update(
       secondsInMemory: availableSeconds, target: Int(bufferSeconds), lastClipAt: lastClip?.date, isSaving: isSaving,
-      isPaused: isPausedByGlasses)
+      isPaused: isPausedByGlasses || isInterrupted)
   }
 
   // MARK: - Ingestion (hors main actor)
 
   nonisolated func ingestVideo(_ sample: CMSampleBuffer) {
     let now = CACurrentMediaTime()
+    let sourcePTS = CMSampleBufferGetPresentationTimeStamp(sample)
+    guard sourcePTS.isNumeric else { return }
+    let mapped = timeline.mapVideo(pts: sourcePTS.seconds, arrival: now)
+    guard let retimed = sample.retimed(presentation: mapped) else { return }
     let isKeyframe = sample.isHEVCKeyframe()
-    clock.update(videoPTS: CMSampleBufferGetPresentationTimeStamp(sample).seconds, hostTime: now)
-    ring.appendVideo(sample, isKeyframe: isKeyframe, hostTime: now)
+    ring.appendVideo(retimed, isKeyframe: isKeyframe, hostTime: now)
     telemetry.video(sample, isKeyframe: isKeyframe, now: now, ring: ring)
   }
 
@@ -222,17 +241,18 @@ final class DashcamRecorder {
   nonisolated func ingestStreamAudio(_ frame: AudioFrame) {
     guard frame.pcmBuffer.frameLength > 0 else { return }  // 1re trame vide à chaque (re)démarrage
     let now = CACurrentMediaTime()
+    guard let mapped = timeline.mapAudio(pts: frame.presentationTimeStamp.seconds) else { return }
     let pcm = calls.isOnCall ? frame.pcmBuffer.silenced() : frame.pcmBuffer
-    guard let sample = pcm?.sampleBuffer(presentationTime: frame.presentationTimeStamp) else { return }
+    let pts = CMTime(seconds: mapped, preferredTimescale: CMTimeScale(frame.pcmBuffer.format.sampleRate))
+    guard let sample = pcm?.sampleBuffer(presentationTime: pts) else { return }
     ring.appendAudio(sample, hostTime: now)
     telemetry.audio(frame.pcmBuffer, now: now)
   }
 
-  /// Micro HFP : heure hôte ramenée dans l'horloge des PTS vidéo via le dernier frame reçu.
+  /// Micro HFP : daté directement sur l'heure de l'iPhone, l'horloge commune des clips.
   nonisolated private func ingestHFPAudio(_ buffer: AVAudioPCMBuffer, hostTime: TimeInterval) {
-    guard let offset = clock.offset else { return }
     let pcm = calls.isOnCall ? buffer.silenced() : buffer
-    let pts = CMTime(seconds: hostTime + offset, preferredTimescale: CMTimeScale(buffer.format.sampleRate))
+    let pts = CMTime(seconds: hostTime, preferredTimescale: CMTimeScale(buffer.format.sampleRate))
     guard let sample = pcm?.sampleBuffer(presentationTime: pts) else { return }
     ring.appendAudio(sample, hostTime: hostTime)
     telemetry.audio(buffer, now: hostTime)
@@ -241,14 +261,14 @@ final class DashcamRecorder {
   // MARK: - Choc (iPhone)
 
   private func impactDetected(_ g: Double) {
-    guard isActive, !impactPending else { return }
+    guard isDashcamOn, !impactPending else { return }
     impactPending = true
     UINotificationFeedbackGenerator().notificationOccurred(.warning)
     log.notice("[P2] CHOC \(String(format: "%.1f", g), privacy: .public) g — sauvegarde dans \(Int(self.impactPostRoll), privacy: .public) s")
     Task { [weak self] in
       guard let self else { return }
       try? await Task.sleep(for: .seconds(self.impactPostRoll))
-      if self.isActive { await self.save(trigger: .phoneImpact) }
+      if self.isDashcamOn { await self.save(trigger: .phoneImpact) }
       self.impactPending = false
     }
   }
@@ -260,7 +280,9 @@ final class DashcamRecorder {
   func save(trigger: TriggerSource) async -> Bool {
     guard !isSaving else { return false }
     let now = CACurrentMediaTime()
-    guard let snapshot = ring.snapshot(seconds: bufferSeconds, now: now) else {
+    // Pendant une coupure, « les 45 dernières secondes » sont celles d'avant la coupure.
+    let reference = isActive ? now : (ring.lastVideoHostTime ?? now)
+    guard let snapshot = ring.snapshot(seconds: bufferSeconds, now: reference) else {
       errorMessage = String(localized: "Rien en mémoire à sauver pour l'instant.")
       return false
     }
@@ -303,18 +325,47 @@ final class DashcamRecorder {
   }
 }
 
-// MARK: - Horloge vidéo
+// MARK: - Horloge commune
 
-/// Décalage « PTS vidéo − heure hôte » du dernier frame, pour dater l'audio HFP.
-private final class VideoClock: @unchecked Sendable {
+/// Chaque session de stream a sa propre horloge (PTS des lunettes), qui repart à chaque session. On
+/// recale chaque segment sur l'heure de l'iPhone au premier frame : la mémoire traverse les coupures
+/// (appel, lunettes pliées, tap) avec une chronologie continue, et l'audio HFP (daté en heure iPhone)
+/// s'aligne sans conversion.
+private final class MediaTimeline: @unchecked Sendable {
   private let lock = NSLock()
-  private var value: TimeInterval?
+  private var base: (pts: Double, host: Double)?
 
-  var offset: TimeInterval? { lock.withLock { value } }
+  func startSegment() { lock.withLock { base = nil } }
 
-  func update(videoPTS: TimeInterval, hostTime: TimeInterval) {
-    guard videoPTS.isFinite else { return }
-    lock.withLock { value = videoPTS - hostTime }
+  func mapVideo(pts: Double, arrival: Double) -> Double {
+    lock.withLock {
+      if base == nil { base = (pts, arrival) }
+      return base!.host + (pts - base!.pts)
+    }
+  }
+
+  /// `nil` tant qu'aucune image du segment n'est arrivée (origine inconnue).
+  func mapAudio(pts: Double) -> Double? {
+    guard pts.isFinite else { return nil }
+    return lock.withLock { base.map { $0.host + (pts - $0.pts) } }
+  }
+}
+
+extension CMSampleBuffer {
+  /// Copie datée sur l'horloge commune (le décalage DTS/PTS d'origine est conservé).
+  fileprivate func retimed(presentation seconds: Double) -> CMSampleBuffer? {
+    var timing = CMSampleTimingInfo()
+    CMSampleBufferGetSampleTimingInfo(self, at: 0, timingInfoOut: &timing)
+    let pts = CMTime(seconds: seconds, preferredTimescale: 90_000)
+    let decode = timing.decodeTimeStamp
+    timing.decodeTimeStamp = decode.isNumeric ? CMTimeAdd(pts, CMTimeSubtract(decode, timing.presentationTimeStamp)) : .invalid
+    timing.presentationTimeStamp = pts
+    var copy: CMSampleBuffer?
+    guard CMSampleBufferCreateCopyWithNewTiming(
+      allocator: kCFAllocatorDefault, sampleBuffer: self, sampleTimingEntryCount: 1, sampleTimingArray: &timing,
+      sampleBufferOut: &copy) == noErr
+    else { return nil }
+    return copy
   }
 }
 

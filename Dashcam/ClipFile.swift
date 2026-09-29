@@ -86,23 +86,62 @@ enum ClipWriter {
   }
 
   /// Audio recalé sur l'origine vidéo ; on ne garde que ce qui tombe dans la durée du clip, dans
-  /// l'ordre strict des timestamps.
+  /// l'ordre strict des timestamps. Les trous (coupure : appel, lunettes pliées…) sont comblés par du
+  /// silence : l'encodeur AAC recolle sinon les morceaux et décale tout le son d'après la coupure.
   private static func rebaseAudio(_ entries: [BufferedSample], origin: CMTime, clipEnd: CMTime) -> [CMSampleBuffer] {
     var result: [CMSampleBuffer] = []
-    var previous = CMTime.negativeInfinity
+    var expected: CMTime?
     for entry in entries {
       let pts = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(entry.sample), origin)
-      guard pts >= .zero, pts < clipEnd, pts > previous else { continue }
+      guard pts >= .zero, pts < clipEnd else { continue }
+      if let expected, pts < expected { continue }  // chevauchement : on garde l'ordre strict
+      guard let format = CMSampleBufferGetFormatDescription(entry.sample) else { continue }
+      let gapStart = expected ?? .zero
+      if CMTimeGetSeconds(CMTimeSubtract(pts, gapStart)) > 0.05 {
+        result.append(contentsOf: silence(format: format, from: gapStart, to: pts))
+      }
       var timing = CMSampleTimingInfo()
       CMSampleBufferGetSampleTimingInfo(entry.sample, at: 0, timingInfoOut: &timing)
       timing.presentationTimeStamp = pts
       timing.decodeTimeStamp = .invalid
       if let copy = entry.sample.retimed(&timing) {
         result.append(copy)
-        previous = pts
+        expected = CMTimeAdd(pts, CMSampleBufferGetDuration(copy))
       }
     }
     return result
+  }
+
+  /// Échantillons PCM nuls couvrant [from, to[, au format de la source (mono ou entrelacé).
+  private static func silence(format: CMAudioFormatDescription, from: CMTime, to: CMTime) -> [CMSampleBuffer] {
+    guard let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(format)?.pointee,
+      asbd.mBytesPerFrame > 0, asbd.mSampleRate > 0,
+      asbd.mChannelsPerFrame == 1 || asbd.mFormatFlags & kAudioFormatFlagIsNonInterleaved == 0
+    else { return [] }
+    let rate = asbd.mSampleRate
+    var remaining = Int((CMTimeGetSeconds(CMTimeSubtract(to, from)) * rate).rounded())
+    var position = CMTimeConvertScale(from, timescale: CMTimeScale(rate), method: .roundHalfAwayFromZero)
+    var buffers: [CMSampleBuffer] = []
+    while remaining > 0 {
+      let frames = min(remaining, 16_384)
+      let bytes = frames * Int(asbd.mBytesPerFrame)
+      var block: CMBlockBuffer?
+      guard CMBlockBufferCreateWithMemoryBlock(
+        allocator: kCFAllocatorDefault, memoryBlock: nil, blockLength: bytes, blockAllocator: kCFAllocatorDefault,
+        customBlockSource: nil, offsetToData: 0, dataLength: bytes, flags: kCMBlockBufferAssureMemoryNowFlag,
+        blockBufferOut: &block) == kCMBlockBufferNoErr, let block,
+        CMBlockBufferFillDataBytes(with: 0, blockBuffer: block, offsetIntoDestination: 0, dataLength: bytes) == kCMBlockBufferNoErr
+      else { break }
+      var sample: CMSampleBuffer?
+      guard CMAudioSampleBufferCreateReadyWithPacketDescriptions(
+        allocator: kCFAllocatorDefault, dataBuffer: block, formatDescription: format, sampleCount: frames,
+        presentationTimeStamp: position, packetDescriptions: nil, sampleBufferOut: &sample) == noErr, let sample
+      else { break }
+      buffers.append(sample)
+      position = CMTimeAdd(position, CMTime(value: CMTimeValue(frames), timescale: CMTimeScale(rate)))
+      remaining -= frames
+    }
+    return buffers
   }
 }
 

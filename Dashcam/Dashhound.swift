@@ -39,7 +39,10 @@ enum DashhoundState: Equatable {
   /// Pas de stream (pause, téléphone en poche sans session).
   case resting
   /// Lunettes déconnectées : le buffer est vide.
-  case disconnected
+  case disconnected(memoryKept: Bool)
+  /// Dashcam en marche mais lunettes occupées (appel WhatsApp, enregistrement lancé depuis les
+  /// lunettes…) : la mémoire d'avant la coupure est gardée, la reprise est automatique.
+  case glassesBusy
   /// Batterie lunettes < 15 % ou thermique chaud.
   case tired(battery: Int?, isHot: Bool)
   /// Registration ou permission manquante.
@@ -58,7 +61,7 @@ enum DashhoundState: Equatable {
     case .ready, .impactDetected: "dashhound-face-alert"
     case .saved, .pausedByGlasses: "dashhound-look-back"
     case .resting: "dashhound-play-bow"
-    case .disconnected, .missingPermission: "dashhound-face-curious"
+    case .disconnected, .missingPermission, .glassesBusy: "dashhound-face-curious"
     case .tired: "dashhound-face-tired"
     case .exported: "dashhound-face-happy"
     case .about: "dashhound-face-wink"
@@ -80,6 +83,7 @@ enum DashhoundState: Equatable {
     case .impactDetected: String(localized: "Choc détecté ! Je sauve dans un instant.")
     case .resting: String(localized: "Je m'étire.")
     case .disconnected: String(localized: "Hmm, je ne les vois plus.")
+    case .glassesBusy: String(localized: "Les lunettes sont occupées (un appel ?).")
     case .tired(_, let isHot): isHot ? String(localized: "J'ai chaud.") : String(localized: "Je fatigue.")
     case .missingPermission: String(localized: "Il me manque une autorisation.")
     case .exported: String(localized: "Bien joué.")
@@ -100,7 +104,9 @@ enum DashhoundState: Equatable {
   /// Information critique à ne jamais taire.
   var warning: String? {
     switch self {
-    case .disconnected: String(localized: "Le buffer est vide.")
+    case .disconnected(let kept):
+      kept ? String(localized: "Je garde ce que j'ai vu, je reprends dès leur retour.") : String(localized: "Le buffer est vide.")
+    case .glassesBusy: String(localized: "Je garde ce que j'ai vu, je reprends dès qu'elles sont libres.")
     case .pausedByGlasses: String(localized: "Je ne filme plus en pause.")
     default: nil
     }
@@ -120,15 +126,17 @@ extension WearablesModel {
     if let battery = batteryLevel, battery < 15 { return .tired(battery: battery, isHot: isThermalHot) }
     if isThermalHot { return .tired(battery: batteryLevel, isHot: true) }
     if sessionState == .started, !isCameraGranted, cameraPermission != "—" { return .missingPermission }
-    if !hasActiveDevice { return wantsSession ? .disconnected : .searching }
-    if recorder.isPausedByGlasses || streamState == .paused || sessionState == .paused { return .pausedByGlasses }
+    let memoryKept = recorder.availableSeconds > 0
+    if !hasActiveDevice { return wantsSession ? .disconnected(memoryKept: memoryKept) : .searching }
     if recorder.impactPending { return .impactDetected }
+    if recorder.isPausedByGlasses || streamState == .paused || sessionState == .paused { return .pausedByGlasses }
     if recorder.justSaved { return .saved }
     if recorder.isActive {
       let target = Int(recorder.bufferSeconds)
       return recorder.availableSeconds >= target
         ? .ready(seconds: target) : .watching(seconds: recorder.availableSeconds, target: target)
     }
+    if recorder.isInterrupted { return .glassesBusy }
     if sessionState == .starting || streamState == .starting || streamState == .waitingForDevice { return .searching }
     return .resting
   }
@@ -187,7 +195,7 @@ struct MascotCard: View {
 #Preview("Tous les états") {
   let states: [DashhoundState] = [
     .onboarding, .searching, .watching(seconds: 32, target: 45), .ready(seconds: 45), .saved,
-    .resting, .disconnected, .tired(battery: 12, isHot: false), .missingPermission, .exported, .about,
+    .resting, .disconnected(memoryKept: true), .glassesBusy, .tired(battery: 12, isHot: false), .missingPermission, .exported, .about,
   ]
   ScrollView {
     VStack(spacing: 32) {

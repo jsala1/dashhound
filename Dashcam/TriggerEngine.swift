@@ -23,9 +23,9 @@ enum TriggerSource: String, Sendable {
 }
 
 /// Seuils proposés dans les réglages (accélération hors gravité, en g). Un ancien réglage absent de
-/// cette liste (2–5 g) retombe sur le défaut, 12 g.
+/// cette liste retombe sur le défaut, 16 g (trajet du 29/09 : 2 pics à 12,7 et 13,7 g en roulant).
 enum ImpactThreshold: Double, CaseIterable, Identifiable, Sendable {
-  case g8 = 8, g12 = 12, g16 = 16, g20 = 20
+  case g12 = 12, g16 = 16, g20 = 20, g25 = 25
   var id: Double { rawValue }
   var label: String { String(localized: "\(Int(rawValue)) g") }
 }
@@ -72,6 +72,8 @@ final class PhoneImpactDetector: @unchecked Sendable {
     }
     log.notice("[P2] détection de choc active, seuil \(threshold, privacy: .public) g")
   }
+
+  var isRunning: Bool { manager.isDeviceMotionActive }
 
   func stop() {
     guard manager.isDeviceMotionActive else { return }

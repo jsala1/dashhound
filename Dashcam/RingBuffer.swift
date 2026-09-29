@@ -85,6 +85,11 @@ final class RingBuffer: @unchecked Sendable {
     }
   }
 
+  /// Heure d'arrivée de la dernière image (pour sauver pendant une coupure du stream).
+  var lastVideoHostTime: TimeInterval? {
+    lock.withLock { video.last?.hostTime }
+  }
+
   var counts: (video: Int, audio: Int) {
     lock.withLock { (video.count, audio.count) }
   }

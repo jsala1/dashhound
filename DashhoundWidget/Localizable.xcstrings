@@ -67,6 +67,16 @@
         }
       }
     },
+    "Reprise automatique…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resuming automatically…"
+          }
+        }
+      }
+    },
     "Sauve les 45 dernières secondes de la dashcam dans Photos.": {
       "localizations": {
         "en": {
@@ -93,16 +103,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save the last 45 s"
-          }
-        }
-      }
-    },
-    "Sauvé — reprise automatique…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Saved — resuming automatically…"
           }
         }
       }
