@@ -13,3 +13,6 @@ captures/
 Dashcam/Info.plist
 DashhoundWidget/Info.plist
 private/
+
+# Réglages locaux de Claude Code (permissions de cette machine)
+.claude/
