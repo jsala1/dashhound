@@ -11,7 +11,7 @@ Dashhound keeps the last 45 seconds of what your glasses see in memory (30 to 12
 ## How it works
 
 1. Your glasses stream video (and their microphone) to your iPhone, using Meta's [Wearables Device Access Toolkit](https://github.com/facebook/meta-wearables-dat-ios).
-2. Dashhound keeps a rolling memory in RAM — nothing is written to disk. Choose the clip length in the settings: **30, 45 or 120 seconds** (45 by default).
+2. Dashhound keeps a rolling memory in RAM — nothing is written to disk. Choose the clip length in the settings: **30, 45, 60, 90 or 120 seconds** (45 by default).
 3. When you trigger a save, the last seconds of that length (a few more, so the clip always starts on a clean frame) go to **Photos**:
    - **double-tap the temple** of your glasses — recording never stops;
    - **Save** on the lock screen / Dynamic Island (Live Activity);

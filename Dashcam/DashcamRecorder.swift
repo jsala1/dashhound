@@ -39,7 +39,7 @@ enum VideoResolution: String, CaseIterable, Identifiable, Sendable {
 
 /// Durée du clip sauvé (réglage) ; un choc y ajoute ses 10 s d'après.
 enum ClipLength: Int, CaseIterable, Identifiable, Sendable {
-  case s30 = 30, s45 = 45, s120 = 120
+  case s30 = 30, s45 = 45, s60 = 60, s90 = 90, s120 = 120
   var id: Int { rawValue }
   var label: String { String(localized: "\(rawValue) s") }
 }

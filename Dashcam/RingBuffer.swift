@@ -25,7 +25,7 @@ struct ClipSnapshot: @unchecked Sendable {
 }
 
 final class RingBuffer: @unchecked Sendable {
-  /// Durée gardée en mémoire (réglage : 30, 45 ou 120 s), modifiable à chaud.
+  /// Durée gardée en mémoire (réglage : 30, 45, 60, 90 ou 120 s), modifiable à chaud.
   var bufferSeconds: TimeInterval {
     get { lock.withLock { seconds } }
     set { lock.withLock { seconds = newValue } }
