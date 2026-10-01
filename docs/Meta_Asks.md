@@ -1,6 +1,6 @@
 # What Dashhound needs from Meta's Wearables toolkit
 
-Dashhound is a retroactive dashcam for Ray-Ban Meta glasses: the glasses stream to the iPhone, the app keeps the last 30–120 s in memory and saves a clip on a double tap, a lock-screen button or an impact. Built on DAT 1.0.0 (iOS) in its first week, every blocker measured — see `P0_VERDICT.md` and `P1_VERDICT.md`. This is the list of what would turn it from a working prototype into something people can rely on, most important first.
+Dashhound is a retroactive dashcam for Ray-Ban Meta glasses: the glasses stream to the iPhone, the app keeps the last 30–120 s in memory and saves a clip on a double tap, a lock-screen button or an impact. Built on DAT 1.0 (iOS) the week it shipped, every blocker measured — see `P0_VERDICT.md` and `P1_VERDICT.md`. This is the list of what would turn it from a working prototype into something people can rely on, most important first.
 
 Setup for all measurements: DAT iOS 1.0.0, one pair of Ray-Ban Meta glasses, iPhone 16 Pro on iOS 27, hvc1 360×640 @ 24 fps with PCM audio from the stream, Developer Mode.
 

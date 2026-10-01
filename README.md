@@ -24,13 +24,13 @@ The capture LED of your glasses stays on the whole time. Dashhound never hides i
 
 ## Status
 
-Built in the first week of Meta's DAT 1.0.0 (released 24 Sep 2026), every blocker documented: see [`P0_VERDICT.md`](P0_VERDICT.md) and [`P1_VERDICT.md`](P1_VERDICT.md) (**provisional** — the list of tests still to run is in the file). Measured so far: clips of 45–48 s at 24 fps with no dropped frames, working with the screen locked; the double tap saved 4/4 times on a real ride.
+Built on Meta's DAT 1.0 the week it shipped (24 Sep 2026), every blocker documented: see [`P0_VERDICT.md`](P0_VERDICT.md) and [`P1_VERDICT.md`](P1_VERDICT.md) (**provisional** — the list of tests still to run is in the file). Measured so far: clips of 45–48 s at 24 fps with no dropped frames, working with the screen locked; the double tap saved 4/4 times on a real ride.
 
 ## Known limitations
 
 Honest list, updated as we learn. Most come from the glasses platform (Meta developer preview), not from the app.
 
-- **Any other app using the glasses microphone (WhatsApp call, voice message, dictation) ends the camera stream;** Dashhound keeps what it filmed and resumes ~4 s after the mic is released.
+- **In my tests, any other app using the glasses microphone (WhatsApp call, voice message, dictation) ended the camera stream;** Dashhound keeps what it filmed and resumes ~4 s after the mic is released.
 - **No music or voice navigation in the glasses while Dashhound runs.** When the glasses camera streams, the glasses stop playing Bluetooth audio (Meta issue [#256](https://github.com/facebook/meta-wearables-dat-ios/issues/256), reported with measurements in [#312](https://github.com/facebook/meta-wearables-dat-ios/issues/312)). Audio routed to another speaker keeps working.
 - **A single tap on the temple pauses the glasses camera** (~4 s gap while Dashhound resumes). The clip is saved anyway, but **use a double tap**: it saves without any gap.
 - **No official background mode.** To keep filming with the screen locked, Dashhound plays silence in a loop (inaudible, and it doesn't stop your other apps' audio).
